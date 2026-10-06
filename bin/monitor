@@ -1,0 +1,13 @@
+#!/bin/sh
+# Opens Donya's Daily Monitor in the default browser.
+URL="https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt"
+
+if command -v open >/dev/null 2>&1; then
+  open "$URL"
+elif command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "$URL"
+elif command -v cmd.exe >/dev/null 2>&1; then
+  cmd.exe /c start "" "$URL"
+else
+  echo "Open this link: $URL"
+fi
