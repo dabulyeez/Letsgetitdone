@@ -1,0 +1,26 @@
+#!/bin/sh
+# Opens Donya's full setup: the Daily Monitor and the Stock Watch screen.
+MONITOR="https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt"
+STOCKS="https://claude.ai/artifact/VFdYdfdFUqpdujybZfmSoM"
+
+open_url() {
+  if command -v open >/dev/null 2>&1; then open "$1"
+  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$1"
+  elif command -v cmd.exe >/dev/null 2>&1; then cmd.exe /c start "" "$1"
+  else echo "  $1"
+  fi
+}
+
+echo "Starting your screens..."
+echo ""
+echo "  Daily Monitor  - tasks, bills, agents"
+open_url "$MONITOR"
+sleep 1
+echo "  Stock Watch    - positions and stop-loss"
+open_url "$STOCKS"
+echo ""
+echo "Your IP right now:"
+curl -s --max-time 5 ifconfig.me 2>/dev/null || echo "  (could not reach the network)"
+echo ""
+echo ""
+echo "Say \"show monitor\" to Claude for a full rundown."
