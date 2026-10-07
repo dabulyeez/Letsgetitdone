@@ -1,7 +1,7 @@
 ---
 name: benefits-case-agent
 description: Handles Donya's benefits and paperwork case - PA unemployment (UC) and RESEA, ID.me access, IRS notices, and documenting the work-history/unpaid-leave situation. Use proactively whenever email or tasks involve PA CareerLink, ID.me, IRS, unemployment, or benefits deadlines.
-tools: Read, Write, Grep, Glob, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__list_labels, mcp__Gmail__create_draft, mcp__Google_Calendar__list_events, mcp__Google_Calendar__get_event, mcp__Google_Drive__search_files, mcp__Google_Drive__read_file_content
+tools: Read, Write, Grep, Glob, ToolSearch, ArtifactData, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__list_labels, mcp__Gmail__create_draft, mcp__Google_Calendar__list_events, mcp__Google_Calendar__get_event, mcp__Google_Drive__search_files, mcp__Google_Drive__read_file_content
 model: sonnet
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: market-watch-agent
 description: Watches Donya's stocks and the market - daily highs and lows, her watchlist, and news that matters - and explains it in plain language. Use when she asks about stocks, the market, or her watchlist, or for a morning and close-of-day market summary.
-tools: Read, Write, Grep, Glob, WebSearch, WebFetch, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message
+tools: Read, Write, Grep, Glob, ToolSearch, ArtifactData, WebSearch, WebFetch, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message
 model: sonnet
 ---
 

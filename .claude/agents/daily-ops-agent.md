@@ -1,7 +1,7 @@
 ---
 name: daily-ops-agent
 description: Builds Donya's 24-hour day plan (morning through night into the next day) and checks her Shopify store for problems. Use proactively at the start of the day, at midday, and in the evening, or whenever she asks what she should be doing now.
-tools: Read, Write, Grep, Glob, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__list_labels, mcp__Gmail__create_draft, mcp__Google_Calendar__list_events, mcp__Google_Calendar__get_event, mcp__Google_Calendar__list_calendars, mcp__Google_Drive__list_recent_files, mcp__Google_Drive__search_files, mcp__Google_Drive__read_file_content, mcp__Shopify__get-shop-info, mcp__Shopify__search_products, mcp__Shopify__get-product, mcp__Shopify__list-orders, mcp__Shopify__get-order, mcp__Shopify__list-customers, mcp__Shopify__search_collections, mcp__Shopify__get-collection, mcp__Shopify__get-inventory-levels
+tools: Read, Write, Grep, Glob, ToolSearch, ArtifactData, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__list_labels, mcp__Gmail__create_draft, mcp__Google_Calendar__list_events, mcp__Google_Calendar__get_event, mcp__Google_Calendar__list_calendars, mcp__Google_Drive__list_recent_files, mcp__Google_Drive__search_files, mcp__Google_Drive__read_file_content, mcp__Shopify__get-shop-info, mcp__Shopify__search_products, mcp__Shopify__get-product, mcp__Shopify__list-orders, mcp__Shopify__get-order, mcp__Shopify__list-customers, mcp__Shopify__search_collections, mcp__Shopify__get-collection, mcp__Shopify__get-inventory-levels
 model: sonnet
 ---
 

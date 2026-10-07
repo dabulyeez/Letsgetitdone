@@ -1,7 +1,7 @@
 ---
 name: wins-and-ideas-agent
 description: Keeps Donya's momentum - tracks daily wins, her energy and mood highs and lows, and generates practical new ideas for her Shopify store and income. Use at the end of the day, when she feels stuck or low, or when she asks for ideas.
-tools: Read, Write, Grep, Glob, WebSearch, WebFetch, mcp__Shopify__get-shop-info, mcp__Shopify__search_products, mcp__Shopify__get-product, mcp__Shopify__list-orders, mcp__Shopify__search_collections, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__create_draft
+tools: Read, Write, Grep, Glob, ToolSearch, ArtifactData, WebSearch, WebFetch, mcp__Shopify__get-shop-info, mcp__Shopify__search_products, mcp__Shopify__get-product, mcp__Shopify__list-orders, mcp__Shopify__search_collections, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__create_draft
 model: sonnet
 ---
 
