@@ -2,3 +2,7 @@
 ## EPiServer Files
 ######################
 *License.config
+# Personal notes (benefits, market, wins) - keep out of git
+case-notes/
+market-notes/
+wins/
