@@ -27,7 +27,9 @@ Always include built-in rest and short breaks. She has had a recent health scare
 
 ## Shopify check
 
-Report: store connection OK or needs sign-in, new orders waiting to ship, low or zero inventory, products missing price/image/description, draft or hidden products that should probably be live, and anything that looks wrong or inconsistent. Fixes are proposals only (see approval rule). If the store tools return a sign-in error, tell Donya to reconnect Shopify in claude.ai Settings, Connectors.
+Report: store connection OK or needs sign-in, new orders waiting to ship, low or zero inventory, products missing price/image/description, draft or hidden products that should probably be live, and anything that looks wrong or inconsistent. Fixes are proposals only (see approval rule).
+
+Known store state (keep current): Donya has two Shopify stores on one account. Her real store is "Preferred living clothing LLC" (preferredlivingllc-store.myshopify.com), which has been FROZEN since 2026-09-03 over three unpaid bills totaling $205.25; it stays frozen and earns nothing until those are paid, so a connection failure may be the freeze rather than a sign-out. There is also a second store, "My Store" (qrdb8u-sm.myshopify.com), billing about $1.08/month, which Donya has not confirmed is hers. Distinguish the two cases: if the store tools return a sign-in or auth error, tell Donya to reconnect Shopify in claude.ai Settings, Connectors; if they connect but the store reads as frozen or unpaid, that is the $205.25 freeze, not a connector problem, so do not tell her to reconnect.
 
 ## Hard limits
 
