@@ -1,0 +1,321 @@
+<title>Daily Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column on phones, two-column control board on wide screens; "Right now" always first. */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --ink: #14202b; --muted: #5b6b78; --line: #d5dde4;
+  --accent: #1f5f8b; --accent-ink: #ffffff;
+  --good: #1f7a4d; --warn: #a86400; --bad: #b3261e;
+  --good-bg: #e3f3ea; --warn-bg: #fbf0dc; --bad-bg: #fbe5e3;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3;
+  --line: #29384a; --accent: #6fb3e3; --accent-ink: #0f161d;
+  --good: #6fd19b; --warn: #f0b155; --bad: #ff8a80;
+  --good-bg: #173326; --warn-bg: #3a2a12; --bad-bg: #3d1c1a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3;
+  --line: #29384a; --accent: #6fb3e3; --accent-ink: #0f161d;
+  --good: #6fd19b; --warn: #f0b155; --bad: #ff8a80;
+  --good-bg: #173326; --warn-bg: #3a2a12; --bad-bg: #3d1c1a; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; }
+.date { color: var(--muted); font-size: .95rem; }
+.status-line { color: var(--muted); font-size: .85rem; }
+.grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .grid { grid-template-columns: 1.2fr 1fr; } .span { grid-column: 1 / -1; } }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.15rem; margin: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; text-wrap: balance; }
+h2 small { font-family: var(--body); font-weight: 400; font-size: .82rem; color: var(--muted); }
+.now { border-color: var(--accent); border-width: 2px; }
+.now .lead { font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.25; }
+.empty { color: var(--muted); font-size: .92rem; }
+ul.rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+ul.rows li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
+ul.rows li:first-child { border-top: 0; }
+.t { font-weight: 700; overflow-wrap: anywhere; }
+.n { color: var(--muted); font-size: .88rem; overflow-wrap: anywhere; }
+.done .t { text-decoration: line-through; color: var(--muted); font-weight: 400; }
+.chip { font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; white-space: nowrap; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.chip.good { background: var(--good-bg); color: var(--good); border-color: transparent; }
+.chip.warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.chip.bad { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+button { font: inherit; cursor: pointer; }
+.tick { width: 26px; height: 26px; border-radius: 6px; border: 2px solid var(--line); background: var(--panel); color: var(--good); display: grid; place-items: center; font-weight: 700; padding: 0; }
+.tick[aria-pressed="true"] { border-color: var(--good); background: var(--good-bg); }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); padding: 4px 10px; font-size: .85rem; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.risk { border-left: 4px solid var(--bad); padding-left: 10px !important; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+.tiles { display: flex; flex-wrap: wrap; gap: 20px; }
+.tile .k { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.tile .v { font-family: var(--mono); font-size: 1.3rem; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th { text-align: left; font-weight: 400; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; padding: 4px 8px 6px 0; }
+td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
+.bar { height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.bar > i { display: block; height: 100%; background: var(--good); }
+form.add { display: flex; flex-wrap: wrap; gap: 8px; }
+form.add input, form.add select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
+form.add input[type=text] { flex: 1 1 200px; }
+.log li { grid-template-columns: auto 1fr !important; }
+.log .who { font-size: .8rem; color: var(--muted); }
+.agents li { grid-template-columns: 1fr auto !important; }
+@media (prefers-reduced-motion: no-preference) { .tick, .btn { transition: background .15s, border-color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Daily Monitor</h1>
+      <div class="date" id="today"></div>
+    </div>
+    <div class="status-line" id="conn">Connecting to your board…</div>
+  </header>
+
+  <section class="now" aria-labelledby="h-now">
+    <h2 id="h-now">Right now <small id="now-count"></small></h2>
+    <div id="now-lead" class="lead">Loading your next move…</div>
+    <div id="now-note" class="n"></div>
+    <div><button class="btn" id="now-done" hidden>Mark done</button></div>
+  </section>
+
+  <div class="grid">
+    <section aria-labelledby="h-tasks">
+      <h2 id="h-tasks">Today and this week <small id="task-progress"></small></h2>
+      <div class="bar" aria-hidden="true"><i id="task-bar" style="width:0%"></i></div>
+      <ul class="rows" id="tasks"></ul>
+      <form class="add" id="add-task">
+        <input type="text" id="new-task" placeholder="Add a task, like: Call PA UC about RESEA" aria-label="New task">
+        <select id="new-group" aria-label="When">
+          <option value="now">Today</option>
+          <option value="week">This week</option>
+        </select>
+        <button class="btn" type="submit">Add</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="h-money">
+      <h2 id="h-money">Money <small id="money-sum"></small></h2>
+      <ul class="rows" id="money"></ul>
+    </section>
+
+    <section aria-labelledby="h-stocks">
+      <h2 id="h-stocks">Stocks <small id="stocks-asof"></small></h2>
+      <div class="tiles" id="stock-tiles"></div>
+      <div class="scroll"><table id="positions"></table></div>
+    </section>
+
+    <section aria-labelledby="h-market">
+      <h2 id="h-market">Markets <small id="market-asof"></small></h2>
+      <div id="market-line" class="t"></div>
+      <div id="market-know" class="n"></div>
+      <div class="scroll"><table id="indexes"></table></div>
+    </section>
+
+    <section aria-labelledby="h-agents">
+      <h2 id="h-agents">Agents</h2>
+      <ul class="rows agents" id="agents"></ul>
+    </section>
+
+    <section aria-labelledby="h-log">
+      <h2 id="h-log">Log <small>latest first</small></h2>
+      <ul class="rows log" id="log"></ul>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const money = (v) => (v == null || v === "" || isNaN(+v)) ? "—" : (+v < 0 ? "-$" : "$") + Math.abs(+v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const short = (d) => { if (!d) return ""; const x = new Date(d); return isNaN(x) ? String(d) : x.toLocaleDateString(undefined, { month: "short", day: "numeric" }); };
+  const when = (d) => { if (!d) return ""; const x = new Date(d); return isNaN(x) ? String(d) : x.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); };
+  const daysUntil = (d) => { const x = new Date(d); if (!d || isNaN(x)) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((x - t) / 864e5); };
+
+  $("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+  const state = { tasks: [], money: [], positions: [], agents: [], log: [], market: null };
+  let db = null;
+
+  function setEmpty(list, text) { list.replaceChildren(el("li", "empty", text)); list.firstChild.style.display = "block"; }
+
+  function renderTasks() {
+    const open = (t) => t.status !== "done";
+    const byOrder = (a, b) => (a.order ?? 999) - (b.order ?? 999);
+    const now = state.tasks.filter((t) => t.group === "now").sort(byOrder);
+    const week = state.tasks.filter((t) => t.group === "week").sort(byOrder);
+    const first = now.find(open) || week.find((t) => open(t) && daysUntil(t.due) != null && daysUntil(t.due) <= 0);
+    if (first) {
+      $("now-lead").textContent = first.title;
+      $("now-note").textContent = [first.note, first.owner && "Owner: " + first.owner, first.due && "Due " + short(first.due)].filter(Boolean).join(" · ");
+      $("now-done").hidden = false; $("now-done").onclick = () => toggleTask(first);
+    } else {
+      $("now-lead").textContent = state.tasks.length ? "Today's list is clear." : "No tasks yet. Add one below, or ask Claude for your commands.";
+      $("now-note").textContent = ""; $("now-done").hidden = true;
+    }
+    $("now-count").textContent = now.filter(open).length ? now.filter(open).length + " open today" : "";
+
+    const all = [...now, ...week];
+    const done = all.filter((t) => !open(t)).length;
+    $("task-progress").textContent = all.length ? `${done} of ${all.length} done` : "";
+    $("task-bar").style.width = all.length ? (100 * done / all.length) + "%" : "0%";
+
+    const list = $("tasks");
+    if (!all.length) return setEmpty(list, "Nothing here yet. Add your first task below.");
+    list.replaceChildren(...all.map((t) => {
+      const li = el("li", t.status === "done" ? "done" : "");
+      const b = el("button", "tick", t.status === "done" ? "✓" : "");
+      b.setAttribute("aria-pressed", t.status === "done"); b.setAttribute("aria-label", (t.status === "done" ? "Reopen " : "Mark done: ") + t.title);
+      b.onclick = () => toggleTask(t);
+      const mid = el("div"); mid.append(el("div", "t", t.title)); if (t.note) mid.append(el("div", "n", t.note));
+      const dd = daysUntil(t.due);
+      let chip;
+      if (t.status === "blocked") chip = el("span", "chip bad", "blocked");
+      else if (t.status === "doing") chip = el("span", "chip warn", "doing");
+      else if (t.status !== "done" && dd != null && dd < 0) chip = el("span", "chip bad", "late");
+      else if (t.status !== "done" && t.due) chip = el("span", "chip" + (dd <= 1 ? " warn" : ""), dd === 0 ? "today" : short(t.due));
+      else chip = el("span", "chip", t.group === "now" ? "today" : "week");
+      li.append(b, mid, chip); return li;
+    }));
+  }
+
+  function renderMoney() {
+    const items = [...state.money].sort((a, b) => (a.status === "done") - (b.status === "done") || (b.risk === true) - (a.risk === true) || String(a.due || "9").localeCompare(String(b.due || "9")));
+    const openAmt = items.filter((m) => m.status !== "done" && !isNaN(+m.amount)).reduce((s, m) => s + +m.amount, 0);
+    $("money-sum").textContent = items.some((m) => m.status !== "done") ? money(openAmt) + " open" : "";
+    const list = $("money");
+    if (!items.length) return setEmpty(list, "No bills or alerts on the board yet.");
+    list.replaceChildren(...items.map((m) => {
+      const li = el("li", (m.status === "done" ? "done " : "") + (m.risk && m.status !== "done" ? "risk" : ""));
+      const b = el("button", "tick", m.status === "done" ? "✓" : "");
+      b.setAttribute("aria-pressed", m.status === "done"); b.setAttribute("aria-label", (m.status === "done" ? "Reopen " : "Mark paid: ") + m.title);
+      b.onclick = () => toggleMoney(m);
+      const mid = el("div"); mid.append(el("div", "t", m.title));
+      const sub = [m.kind, m.due && "due " + short(m.due), m.note].filter(Boolean).join(" · "); if (sub) mid.append(el("div", "n", sub));
+      li.append(b, mid, el("span", "num", m.amount != null && m.amount !== "" ? money(m.amount) : "")); return li;
+    }));
+  }
+
+  function renderStocks() {
+    const ps = state.positions;
+    const tiles = $("stock-tiles"), tbl = $("positions");
+    if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; return; }
+    let cost = 0, value = 0, priced = 0;
+    const head = el("tr"); ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop"].forEach((h) => head.append(el("th", "", h)));
+    const rows = ps.slice().sort((a, b) => String(a.ticker).localeCompare(String(b.ticker))).map((p) => {
+      const tr = el("tr"); const sh = +p.shares || 0, buy = +p.buy, last = +p.lastPrice;
+      const has = !isNaN(last) && p.lastPrice != null && p.lastPrice !== "";
+      const gain = has && !isNaN(buy) ? (last - buy) * sh : null;
+      if (has && !isNaN(buy)) { cost += buy * sh; value += last * sh; priced++; }
+      tr.append(el("td", "t", p.ticker), el("td", "num", sh), el("td", "num", money(p.buy)), el("td", "num", has ? money(last) : "—"));
+      const g = el("td", "num " + (gain > 0 ? "pos" : gain < 0 ? "neg" : ""), gain == null ? "—" : money(gain)); tr.append(g);
+      const st = el("td"); const stop = +p.stop;
+      if (has && !isNaN(stop) && p.stop != null) {
+        const gap = (last - stop) / last;
+        st.append(el("span", "chip " + (gap <= 0 ? "bad" : gap < 0.05 ? "warn" : "good"), gap <= 0 ? "hit " + money(stop) : gap < 0.05 ? "near " + money(stop) : money(stop)));
+      } else st.append(el("span", "num", p.stop != null ? money(p.stop) : "—"));
+      tr.append(st); return tr;
+    });
+    tbl.replaceChildren(head, ...rows);
+    const total = value - cost;
+    const t1 = el("div", "tile"); t1.append(el("div", "k", "Total gain / loss"), el("div", "v " + (total > 0 ? "pos" : total < 0 ? "neg" : ""), priced ? money(total) : "—"));
+    const t2 = el("div", "tile"); t2.append(el("div", "k", "Market value"), el("div", "v", priced ? money(value) : "—"));
+    tiles.replaceChildren(t1, t2);
+    const latest = ps.map((p) => p.lastUpdated).filter(Boolean).sort().pop();
+    $("stocks-asof").textContent = latest ? "prices " + when(latest) : "";
+  }
+
+  function renderMarket() {
+    const m = state.market;
+    if (!m) { $("market-line").textContent = ""; $("market-know").textContent = "No market summary yet. The market agent fills this in each morning and at the close."; $("market-know").className = "empty"; $("indexes").replaceChildren(); $("market-asof").textContent = ""; return; }
+    $("market-line").textContent = m.oneLine || ""; $("market-know").className = "n";
+    $("market-know").textContent = Array.isArray(m.worthKnowing) ? m.worthKnowing.join(" · ") : (m.worthKnowing || "");
+    $("market-asof").textContent = [m.asOf && when(m.asOf), m.source].filter(Boolean).join(" · ");
+    const rows = [...(m.indexes || []), ...(m.watchlist || [])].filter((r) => r && typeof r === "object");
+    if (!rows.length) return $("indexes").replaceChildren();
+    const head = el("tr"); ["Name", "Last", "Change"].forEach((h) => head.append(el("th", "", h)));
+    $("indexes").replaceChildren(head, ...rows.map((r) => {
+      const tr = el("tr"); const ch = r.changePct ?? r.change;
+      tr.append(el("td", "t", r.name || r.ticker || ""), el("td", "num", r.last ?? r.price ?? "—"),
+        el("td", "num " + (+ch > 0 ? "pos" : +ch < 0 ? "neg" : ""), ch == null ? "—" : (+ch > 0 ? "+" : "") + ch + (r.changePct != null ? "%" : "")));
+      return tr;
+    }));
+  }
+
+  function renderAgents() {
+    const list = $("agents");
+    if (!state.agents.length) return setEmpty(list, "Your agents will check in here after their first run.");
+    list.replaceChildren(...state.agents.slice().sort((a, b) => String(a.name).localeCompare(String(b.name))).map((a) => {
+      const li = el("li"); const mid = el("div");
+      mid.append(el("div", "t", a.name || "Agent"));
+      const sub = [a.lastResult, a.lastRun && "ran " + when(a.lastRun)].filter(Boolean).join(" · "); if (sub) mid.append(el("div", "n", sub));
+      const cls = a.status === "working" ? "warn" : a.status === "ran" ? "good" : "";
+      li.append(mid, el("span", "chip " + cls, a.statusLabel || a.status || "ready")); return li;
+    }));
+  }
+
+  function renderLog() {
+    const list = $("log");
+    const items = state.log.slice().sort((a, b) => String(b.ts).localeCompare(String(a.ts))).slice(0, 15);
+    if (!items.length) return setEmpty(list, "Things you finish show up here.");
+    list.replaceChildren(...items.map((l) => {
+      const li = el("li"); li.append(el("span", "who num", short(l.ts)));
+      const mid = el("div"); mid.append(el("div", "", l.text)); if (l.who) mid.append(el("div", "who", l.who)); li.append(mid); return li;
+    }));
+  }
+
+  const renderers = { tasks: renderTasks, money: renderMoney, positions: renderStocks, agents: renderAgents, log: renderLog };
+  Object.values(renderers).forEach((f) => f()); renderMarket();
+
+  async function addLog(text) {
+    try { await db.collection("log").add({ ts: new Date().toISOString(), who: "Donya", text }); } catch (e) {}
+  }
+  async function toggleTask(t) {
+    if (!db) return;
+    const done = t.status !== "done";
+    try { await db.collection("tasks").doc(t.id).update({ status: done ? "done" : "todo" }); if (done) addLog("Done: " + t.title); }
+    catch (e) { $("conn").textContent = "Couldn't save that change. Check your connection and try again."; }
+  }
+  async function toggleMoney(m) {
+    if (!db) return;
+    const done = m.status !== "done";
+    try { await db.collection("money").doc(m.id).update({ status: done ? "done" : "open" }); if (done) addLog("Paid / cleared: " + m.title); }
+    catch (e) { $("conn").textContent = "Couldn't save that change. Check your connection and try again."; }
+  }
+
+  $("add-task").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const title = $("new-task").value.trim(); if (!title || !db) return;
+    const group = $("new-group").value;
+    const order = Math.max(0, ...state.tasks.filter((t) => t.group === group).map((t) => +t.order || 0)) + 1;
+    try { await db.collection("tasks").add({ title, group, status: "todo", order, owner: "Donya" }); $("new-task").value = ""; }
+    catch (e) { $("conn").textContent = "Couldn't add that task. Try again in a moment."; }
+  });
+
+  (async () => {
+    db = await window.claude?.use?.("db");
+    if (!db) { $("conn").textContent = "Sign in to claude.ai to load your board."; $("now-lead").textContent = "Your board loads when you're signed in."; return; }
+    $("conn").textContent = "Live";
+    for (const name of Object.keys(renderers)) {
+      db.collection(name).onSnapshot((snap) => {
+        state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderers[name]();
+      }, () => { $("conn").textContent = "Lost connection to the board. Reload to reconnect."; });
+    }
+    db.doc("market/today").onSnapshot((s) => { state.market = s.exists ? s.data() : null; renderMarket(); }, () => {});
+  })();
+})();
+</script>

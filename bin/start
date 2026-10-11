@@ -1,6 +1,6 @@
 #!/bin/sh
 # Opens Donya's full setup: the Daily Monitor and the Stock Watch screen.
-MONITOR="https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt"
+MONITOR="https://claude.ai/artifact/LamtUS6ZKmsBJntZ1agBTs"
 STOCKS="https://claude.ai/artifact/VFdYdfdFUqpdujybZfmSoM"
 
 open_url() {
