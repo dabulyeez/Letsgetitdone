@@ -80,8 +80,10 @@ const page = await ctx.newPage()
 const errors = []
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message))
-// Google Fonts are not reachable from the container; fail fast so the fallback stack renders.
-await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort())
+// Google Fonts are not reachable from the container. Answer with an empty 200 so the fallback stack
+// renders and no console error is produced (an aborted request would log net::ERR_FAILED).
+await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: r.request().url().includes('googleapis') ? 'text/css' : 'font/woff2', body: '' }))
+page.setDefaultTimeout(5000)  // a mistyped selector should fail in 5s, not Playwright's default 30s
 await page.addInitScript(DB_STUB)
 // goto (not setContent) so the init script above runs before the page script.
 await page.route('http://monitor.test/', (r) => r.fulfill({ contentType: 'text/html', body: SKELETON(readFileSync(PAGE, 'utf8')) }))
@@ -138,11 +140,10 @@ async function smoke() {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
   check('no horizontal page scroll at 400px', overflow <= 0, `overflow ${overflow}px`)
   const clipped = await page.evaluate(() => [...document.querySelectorAll('#positions tr:not(.head) td:nth-child(n+5)')].filter((td) => td.getBoundingClientRect().right > window.innerWidth).length)
-  check('stock Stop and Target cells are fully visible at 400px', clipped === 0, `${clipped} cells cut off`)
+  check('stock Gain, Stop and Target cells are fully visible at 400px', clipped === 0, `${clipped} cells cut off`)
   await shot('smoke-3-seeded-phone-dark')
 
-  const real = errors.filter((e) => !/fonts\.(googleapis|gstatic)|ERR_FAILED|net::/.test(e))
-  check('no console errors', real.length === 0, real.join(' | '))
+  check('no console errors', errors.length === 0, errors.join(' | '))
   const failed = results.filter((r) => !r).length
   console.log(`\n${results.length - failed}/${results.length} passed. Screenshots in ${OUT}`)
   return failed ? 1 : 0
