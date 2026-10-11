@@ -214,7 +214,7 @@ form.add input[type=text] { flex: 1 1 200px; }
     const tiles = $("stock-tiles"), tbl = $("positions");
     if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; return; }
     let cost = 0, value = 0, priced = 0;
-    const head = el("tr"); ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop"].forEach((h) => head.append(el("th", "", h)));
+    const head = el("tr"); ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop", "Target"].forEach((h) => head.append(el("th", "", h)));
     const rows = ps.slice().sort((a, b) => String(a.ticker).localeCompare(String(b.ticker))).map((p) => {
       const tr = el("tr"); const sh = +p.shares || 0, buy = +p.buy, last = +p.lastPrice;
       const has = !isNaN(last) && p.lastPrice != null && p.lastPrice !== "";
@@ -227,7 +227,11 @@ form.add input[type=text] { flex: 1 1 200px; }
         const gap = (last - stop) / last;
         st.append(el("span", "chip " + (gap <= 0 ? "bad" : gap < 0.05 ? "warn" : "good"), gap <= 0 ? "hit " + money(stop) : gap < 0.05 ? "near " + money(stop) : money(stop)));
       } else st.append(el("span", "num", p.stop != null ? money(p.stop) : "—"));
-      tr.append(st); return tr;
+      if (p.stop != null && p.stopOrderSet !== true) st.append(el("div", "n", "not set in app"));
+      const tg = el("td"); const target = +p.target;
+      if (p.target != null && p.target !== "" && !isNaN(target)) tg.append(el("span", "chip " + (has && last >= target ? "good" : ""), (has && last >= target ? "hit " : "") + money(target)));
+      else tg.append(el("span", "num", "—"));
+      tr.append(st, tg); return tr;
     });
     tbl.replaceChildren(head, ...rows);
     const total = value - cost;
