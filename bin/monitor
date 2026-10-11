@@ -1,6 +1,6 @@
 #!/bin/sh
 # Opens Donya's Daily Monitor in the default browser.
-URL="https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt"
+URL="https://claude.ai/artifact/LamtUS6ZKmsBJntZ1agBTs"
 
 if command -v open >/dev/null 2>&1; then
   open "$URL"

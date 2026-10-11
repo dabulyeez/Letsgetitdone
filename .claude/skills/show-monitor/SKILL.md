@@ -5,7 +5,7 @@ description: Opens Donya's Daily Monitor board and reads out everything on it in
 
 # Show monitor
 
-The Daily Monitor is one private claude.ai page that holds everything: https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt
+The Daily Monitor is one private claude.ai page that holds everything: https://claude.ai/artifact/LamtUS6ZKmsBJntZ1agBTs
 
 It already replaces needing several pages open — email, calendar, Shopify, a stock app. When Donya says "show monitor", pull every collection and give him the full picture in one reply, so he never has to go find it himself.
 
