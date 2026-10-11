@@ -64,6 +64,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 th { text-align: left; font-weight: 400; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; padding: 4px 8px 6px 0; }
 td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
+@media (max-width: 560px) {
+  #positions tr.head { display: none; }
+  #positions, #positions tbody { display: block; }
+  #positions tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+  #positions tr:first-child { border-top: 0; }
+  #positions td { border: 0; padding: 0; min-width: 0; }
+  #positions td:first-child { grid-column: 1 / -1; font-size: 1.05rem; }
+  #positions td:first-child::before { display: none; }
+  #positions td::before { content: attr(data-label); display: block; font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+}
 .bar { height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
 .bar > i { display: block; height: 100%; background: var(--good); }
 form.add { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -214,7 +224,8 @@ form.add input[type=text] { flex: 1 1 200px; }
     const tiles = $("stock-tiles"), tbl = $("positions");
     if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; return; }
     let cost = 0, value = 0, priced = 0;
-    const head = el("tr"); ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop", "Target"].forEach((h) => head.append(el("th", "", h)));
+    const COLS = ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop", "Target"];
+    const head = el("tr", "head"); COLS.forEach((h) => head.append(el("th", "", h)));
     const rows = ps.slice().sort((a, b) => String(a.ticker).localeCompare(String(b.ticker))).map((p) => {
       const tr = el("tr"); const sh = +p.shares || 0, buy = +p.buy, last = +p.lastPrice;
       const has = !isNaN(last) && p.lastPrice != null && p.lastPrice !== "";
@@ -231,7 +242,7 @@ form.add input[type=text] { flex: 1 1 200px; }
       const tg = el("td"); const target = +p.target;
       if (p.target != null && p.target !== "" && !isNaN(target)) tg.append(el("span", "chip " + (has && last >= target ? "good" : ""), (has && last >= target ? "hit " : "") + money(target)));
       else tg.append(el("span", "num", "—"));
-      tr.append(st, tg); return tr;
+      tr.append(st, tg); [...tr.children].forEach((c, i) => c.dataset.label = COLS[i]); return tr;
     });
     tbl.replaceChildren(head, ...rows);
     const total = value - cost;
