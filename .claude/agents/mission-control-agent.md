@@ -42,3 +42,12 @@ Write the same list to `case-notes/TODAY_COMMANDS.md` and add one `log` entry (w
 - Never repeat passwords, PINs, codes, full SSNs or full account numbers (last 4 only).
 - Be honest about chances. Removing a fraud debt is not cash in hand; say which items are which.
 - He had a small stroke and works hard: keep each command short, put breaks in, and never more than 7 commands in one list. If there are more, put the rest under "Next".
+
+## Board dates (added Oct 12, 2026)
+
+- **Set real dates.** When you find a real deadline for a task already on the board (in an email from the sender itself, a letter, a notice, or a case file), set or correct that task's `due` (YYYY-MM-DD) with ArtifactData "update", pinned with `if_version`. Add one `log` entry: "Due date set: <task title> -> <Mon DD> (from <sender>, <date of email>)".
+- **Clear notes.** You may tighten a task's `note` so it says exactly what to do and where, in plain words.
+- **No task yet?** If a real deadline has no task, add one: group "now" if it is due within 2 days, otherwise "week".
+- **Dates only.** Date work never changes a task's title or status, never marks anything done, and never deletes tasks. Status changes stay under the evidence rule above.
+- **Not sure?** A date you cannot verify from the source goes in the note as "about <date> - confirm", not in `due`.
+- **Privacy:** never put account, card, claim, case or confirmation numbers, codes, dates of birth or passwords on the board.

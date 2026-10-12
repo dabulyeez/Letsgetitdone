@@ -13,7 +13,7 @@ Nothing to install in the cloud container. It already has Node 22, Playwright 1.
 
 ## Run (agent path)
 
-Smoke check. It runs 19 checks (empty states, stock stop and target chips, ticking a task, adding a task, no clipped columns at 400px, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
+Smoke check. It runs 22 checks (empty states, stock stop and target chips, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, no clipped columns at 400px, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
 
 ```bash
 node .claude/skills/run-letsgetitdone/driver.mjs --smoke
@@ -50,7 +50,7 @@ EOF
 | `theme light\|dark` | Sets the emulated color scheme. |
 | `click <sel>`, `fill <sel> <text>`, `select <sel> <value>` | Playwright actions. Quote selectors or text that contain spaces. |
 | `text <sel>`, `wait <sel>`, `eval <js>` | Read inner text, wait for an element, evaluate JS in the page. |
-| `dump` | Print the whole stub database as JSON: seeded docs and the page's writes together. Docs the page adds have ids `auto1`, `auto2`, and so on, and edits to seeded docs show as changed fields. Use it to prove a click saved. |
+| `dump` | Print the whole stub database as JSON: seeded docs and the page's writes together. Tasks the page adds have ids `auto1`, `auto2`, and so on, log entries from ticks have ids `done-<task id>` and `paid-<money id>`, and edits to seeded docs show as changed fields. Use it to prove a click saved. |
 | `errors` | Console and page errors so far, or `(none)`. |
 | `quit` | End the session. A blank line or a line starting with `#` is ignored, and end of input also ends it. |
 
@@ -58,9 +58,11 @@ How the REPL behaves: only double quotes group words (there is no escaping), `fi
 
 Point `--page <path>` at another HTML file to test a different version of the page.
 
+How the task list behaves, so you know what to click: open tasks sit under a "Today" (group `now`) and a "This week" (group `week`) label, soonest due first and undated last, then by `order`. Done tasks are folded into `#tasks details.done-list`, closed by default, so a done task's tick is hidden until you `click "#tasks details.done-list summary"`. Ticks are easiest to hit by label, for example `click "#tasks button[aria-label='Mark done: Check Navy Federal activity']"` or `[aria-label='Reopen ...']`. Ticking writes one log doc per item (`log/done-<task id>` or `log/paid-<money id>`) and unticking deletes it, so ticking on, off and on again leaves one entry. The Log shows the newest 6 entries and hides older ones whose text repeats a newer one word for word. Notes in the list are clamped to two lines; clicking the task text (`#tasks .tt`) toggles the full note. The "Right now" card uses the same rule as the list, so it always shows the top open `now` task (or, if every `now` task is done, an overdue `week` task).
+
 To check a change, run the smoke check, then use the REPL to reproduce what you changed, screenshot at both `desktop` and `phone`, and read the screenshots. Donya mostly uses this on a phone.
 
-`sample-seed.json` is fake data. The tickers are `DEMOA`, `DEMOB` and `DEMOC`, set up so one position is near its stop, one is past it, and one is at its target. Its due dates are absolute (Oct 5 to Oct 20, 2026), so the "late" and "today" chips change as the real date moves on. Never write that file to the real board.
+`sample-seed.json` is fake data. The tickers are `DEMOA`, `DEMOB` and `DEMOC`, set up so one position is near its stop, one is past it, and one is at its target. Its due dates are absolute (Oct 5 to Oct 20, 2026), so the due chips ("Late", "Today", "Tomorrow", a weekday like "Wed" within 6 days, otherwise a date like "Oct 26") change as the real date moves on. A bare `YYYY-MM-DD` due date is read as a local calendar day. Never write that file to the real board.
 
 ## Run (human path)
 
@@ -72,7 +74,7 @@ Inside the cloud container it prints `Open this link: https://claude.ai/artifact
 
 ## Test
 
-The repo has no test suite. The smoke check above is the test. It passes 19 of 19 on a clean checkout.
+The repo has no test suite. The smoke check above is the test. It passes 22 of 22 on a clean checkout.
 
 ## Gotchas
 
@@ -80,6 +82,7 @@ The repo has no test suite. The smoke check above is the test. It passes 19 of 1
 - **Google Fonts are stubbed out with empty responses.** The container cannot reach them, so screenshots use system fallback fonts instead of Bricolage Grotesque, Atkinson Hyperlegible and JetBrains Mono (numbers and chips use the system monospace). Spacing and wrapping can differ a little from the real page. Nothing is filtered from `errors`, so anything listed there is real.
 - **The smoke check's "no horizontal page scroll" test cannot see clipped content.** Tables sit in `overflow-x: auto` boxes, so a table can lose its Stop and Target columns and the page still reports no overflow. A real bug like that shipped once. The check "Gain, Stop and Target cells are fully visible at 400px" covers columns 5 to 7, so update its `td:nth-child(n+5)` selector if you reorder columns. Add a similar explicit check when you add columns.
 - **The stub is simpler than the real database.** It has no access rules, no `version` or `if_version` pinning, no latency and no persistence. It supports only `collection`/`doc` with `get`, `set`, `update`, `delete`, `add` and `onSnapshot`: no `where`, `orderBy`, `limit` or batches, and the `onSnapshot` error callback never fires, so the page's "Lost connection to the board" path cannot be exercised. `use()` returns null for every capability except `db`. It proves rendering and write calls, not what the real artifact database accepts. After a change that adds fields or collections, check one real write with the ArtifactData tool.
+- **Wait after `theme` before `ss`.** The tick boxes animate their background, so a screenshot taken right after a theme switch shows them as grey filled squares. Add `eval new Promise(r => setTimeout(r, 400))` between `theme` and `ss`.
 - **The page is a fragment, not a document.** `<title>`, `<link>`, `<style>` and `<script>` all sit at the top level of the file because the Artifact tool wraps them in a skeleton at publish time. The driver recreates that skeleton. Do not add `<html>` or `<body>` to the file.
 - **Playwright is only importable by path.** ESM ignores `NODE_PATH`, so a plain `import 'playwright'` from this folder fails. The driver uses `createRequire` on the `npm root -g` directory.
 
