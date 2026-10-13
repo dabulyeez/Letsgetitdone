@@ -9,6 +9,8 @@ struct ContentView: View {
                 .tabItem { Label("Money", systemImage: "dollarsign.circle") }
             StocksView()
                 .tabItem { Label("Stocks", systemImage: "chart.line.uptrend.xyaxis") }
+            CounterView()
+                .tabItem { Label("Counter", systemImage: "plus.circle") }
         }
     }
 }
