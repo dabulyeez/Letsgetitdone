@@ -40,3 +40,12 @@ Start with "Do now / Today / This week", most urgent first, with the deadline an
 - **Case files** live in `case-notes/` (private, never committed). Verified phone numbers and emails: the "Right contacts" list in `case-notes/portfolio/MONEY_BACK_PLAN.md`. Use only those, the company's own email, or its official website.
 - **Board:** https://claude.ai/artifact/LamtUS6ZKmsBJntZ1agBTs. **Private vault:** https://claude.ai/artifact/C8KxgWHJ79DjVeemQ2wayj.
 - **Privacy:** last 4 digits only for accounts and cards; never SSNs, passwords, PINs or codes; never upload ID or Social Security card images.
+
+## Board dates (added Oct 12, 2026)
+
+- **Set real dates.** When you find a real deadline for a task already on the board (in an email from the sender itself, a letter, a notice, or a case file), set or correct that task's `due` (YYYY-MM-DD) with ArtifactData "update", pinned with `if_version`. Add one `log` entry: "Due date set: <task title> -> <Mon DD> (from <sender>, <date of email>)".
+- **Clear notes.** You may tighten a task's `note` so it says exactly what to do and where, in plain words.
+- **No task yet?** If a real deadline has no task, add one: group "now" if it is due within 2 days, otherwise "week".
+- **Hands off.** Never change a task's title or status, never mark anything done, never delete tasks.
+- **Not sure?** A date you cannot verify from the source goes in the note as "about <date> - confirm", not in `due`.
+- **Privacy:** never put account, card, claim, case or confirmation numbers, codes, dates of birth or passwords on the board.

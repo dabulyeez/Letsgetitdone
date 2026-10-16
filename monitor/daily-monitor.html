@@ -53,7 +53,21 @@ button { font: inherit; cursor: pointer; }
 .tick[aria-pressed="true"] { border-color: var(--good); background: var(--good-bg); }
 .btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; }
 .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); padding: 4px 10px; font-size: .85rem; }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* Task list: open tasks in "Today" / "This week" groups, done tasks folded away at the bottom. */
+#tasks { display: grid; gap: 14px; }
+.glabel { margin: 0 0 2px; font-family: var(--body); font-weight: 700; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tt { display: grid; gap: 2px; width: 100%; min-width: 0; padding: 0; border: 0; border-radius: 4px; background: none; color: inherit; text-align: left; }
+.tt .t, .tt .n { display: block; }
+.n.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; max-height: 2.9em; }
+.tt[aria-expanded="true"] .n.clamp { display: block; -webkit-line-clamp: unset; line-clamp: none; max-height: none; overflow: visible; }
+.chips { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+details.done-list { border-top: 1px solid var(--line); padding-top: 8px; }
+details.done-list summary { list-style: none; cursor: pointer; width: fit-content; display: flex; align-items: center; gap: 8px; padding: 2px 4px 2px 0; border-radius: 4px; color: var(--muted); font-size: .85rem; font-weight: 700; }
+details.done-list summary::-webkit-details-marker { display: none; }
+details.done-list summary::before { content: ""; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); margin-left: 2px; }
+details.done-list[open] summary::before { transform: rotate(45deg); }
+details.done-list > ul { margin-top: 6px; }
 .risk { border-left: 4px solid var(--bad); padding-left: 10px !important; }
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pos { color: var(--good); } .neg { color: var(--bad); }
@@ -79,10 +93,12 @@ td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
 form.add { display: flex; flex-wrap: wrap; gap: 8px; }
 form.add input, form.add select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
 form.add input[type=text] { flex: 1 1 200px; }
+@media (max-width: 480px) { form.add input[type=text] { flex-basis: 100%; } form.add select { flex: 1 1 auto; } }
 .log li { grid-template-columns: auto 1fr !important; }
 .log .who { font-size: .8rem; color: var(--muted); }
+.log .who.num { min-width: 6ch; }
 .agents li { grid-template-columns: 1fr auto !important; }
-@media (prefers-reduced-motion: no-preference) { .tick, .btn { transition: background .15s, border-color .15s; } }
+@media (prefers-reduced-motion: no-preference) { .tick, .btn { transition: background .15s, border-color .15s; } details.done-list summary::before { transition: transform .15s; } }
 </style>
 
 <div class="wrap">
@@ -105,7 +121,7 @@ form.add input[type=text] { flex: 1 1 200px; }
     <section aria-labelledby="h-tasks">
       <h2 id="h-tasks">Today and this week <small id="task-progress"></small></h2>
       <div class="bar" aria-hidden="true"><i id="task-bar" style="width:0%"></i></div>
-      <ul class="rows" id="tasks"></ul>
+      <div id="tasks"></div>
       <form class="add" id="add-task">
         <input type="text" id="new-task" placeholder="Add a task, like: Call PA UC about RESEA" aria-label="New task">
         <select id="new-group" aria-label="When">
@@ -151,14 +167,27 @@ form.add input[type=text] { flex: 1 1 200px; }
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const money = (v) => (v == null || v === "" || isNaN(+v)) ? "—" : (+v < 0 ? "-$" : "$") + Math.abs(+v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const short = (d) => { if (!d) return ""; const x = new Date(d); return isNaN(x) ? String(d) : x.toLocaleDateString(undefined, { month: "short", day: "numeric" }); };
+  // A plain "YYYY-MM-DD" due date is a local calendar day; new Date() would read it as UTC midnight (the day before in the US).
+  const parseDate = (d) => { if (d == null || d === "") return null; const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d)); const x = m ? new Date(+m[1], m[2] - 1, +m[3]) : new Date(d); return isNaN(x) ? null : x; };
+  const short = (d) => { if (!d) return ""; const x = parseDate(d); return x ? x.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : String(d); };
   const when = (d) => { if (!d) return ""; const x = new Date(d); return isNaN(x) ? String(d) : x.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); };
-  const daysUntil = (d) => { const x = new Date(d); if (!d || isNaN(x)) return null; const t = new Date(); t.setHours(0,0,0,0); return Math.round((x - t) / 864e5); };
+  const daysUntil = (d) => { const x = parseDate(d); if (!x) return null; x.setHours(0,0,0,0); const t = new Date(); t.setHours(0,0,0,0); return Math.round((x - t) / 864e5); };
+  const dueLabel = (d) => {
+    const dd = daysUntil(d);
+    if (dd == null) return String(d);
+    if (dd === 0) return "Today";
+    if (dd === 1) return "Tomorrow";
+    if (dd > 1 && dd <= 6) return parseDate(d).toLocaleDateString(undefined, { weekday: "short" });
+    return short(d);
+  };
 
   $("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
   const state = { tasks: [], money: [], positions: [], agents: [], log: [], market: null };
   let db = null;
+  // View state that has to survive re-renders from the live board: notes opened in full, and the Done fold.
+  const expanded = new Set();
+  let doneOpen = false;
 
   function setEmpty(list, text) { list.replaceChildren(el("li", "empty", text)); list.firstChild.style.display = "block"; }
 
@@ -167,14 +196,18 @@ form.add input[type=text] { flex: 1 1 200px; }
     const byOrder = (a, b) => (a.order ?? 999) - (b.order ?? 999);
     const now = state.tasks.filter((t) => t.group === "now").sort(byOrder);
     const week = state.tasks.filter((t) => t.group === "week").sort(byOrder);
-    const first = now.find(open) || week.find((t) => open(t) && daysUntil(t.due) != null && daysUntil(t.due) <= 0);
+    // Open tasks: soonest due first, undated last, then the board's order. "Right now" uses the same rule as the list.
+    const soonest = (a, b) => (daysUntil(a.due) ?? Infinity) - (daysUntil(b.due) ?? Infinity) || byOrder(a, b);
+    const first = now.filter(open).sort(soonest)[0] || week.filter((t) => open(t) && daysUntil(t.due) != null && daysUntil(t.due) <= 0).sort(soonest)[0];
     if (first) {
       $("now-lead").textContent = first.title;
       $("now-note").textContent = [first.note, first.owner && "Owner: " + first.owner, first.due && "Due " + short(first.due)].filter(Boolean).join(" · ");
       $("now-done").hidden = false; $("now-done").onclick = () => toggleTask(first);
     } else {
       $("now-lead").textContent = state.tasks.length ? "Today's list is clear." : "No tasks yet. Add one below, or ask Claude for your commands.";
-      $("now-note").textContent = ""; $("now-done").hidden = true;
+      const next = week.filter(open).sort(soonest)[0];
+      $("now-note").textContent = next ? "Next up this week: " + next.title + (next.due ? " · Due " + short(next.due) : "") : "";
+      $("now-done").hidden = true;
     }
     $("now-count").textContent = now.filter(open).length ? now.filter(open).length + " open today" : "";
 
@@ -184,22 +217,51 @@ form.add input[type=text] { flex: 1 1 200px; }
     $("task-bar").style.width = all.length ? (100 * done / all.length) + "%" : "0%";
 
     const list = $("tasks");
-    if (!all.length) return setEmpty(list, "Nothing here yet. Add your first task below.");
-    list.replaceChildren(...all.map((t) => {
-      const li = el("li", t.status === "done" ? "done" : "");
-      const b = el("button", "tick", t.status === "done" ? "✓" : "");
-      b.setAttribute("aria-pressed", t.status === "done"); b.setAttribute("aria-label", (t.status === "done" ? "Reopen " : "Mark done: ") + t.title);
-      b.onclick = () => toggleTask(t);
-      const mid = el("div"); mid.append(el("div", "t", t.title)); if (t.note) mid.append(el("div", "n", t.note));
+    if (!all.length) return list.replaceChildren(el("p", "empty", "Nothing here yet. Add your first task below."));
+    const parts = [];
+    for (const [label, items] of [["Today", now], ["This week", week]]) {
+      const openItems = items.filter(open).sort(soonest);
+      if (!openItems.length) continue;
+      const g = el("div", "tgroup"); g.append(el("h3", "glabel", label), taskList(openItems)); parts.push(g);
+    }
+    if (!parts.length) parts.push(el("p", "empty", "Everything on this list is done."));
+    const doneItems = all.filter((t) => !open(t));
+    if (doneItems.length) {
+      const d = el("details", "done-list"); d.open = doneOpen;
+      d.addEventListener("toggle", () => { doneOpen = d.open; });
+      d.append(el("summary", "", `Done (${doneItems.length})`), taskList(doneItems)); parts.push(d);
+    }
+    list.replaceChildren(...parts);
+  }
+
+  function taskList(items) { const ul = el("ul", "rows"); ul.append(...items.map(taskRow)); return ul; }
+
+  function taskRow(t) {
+    const isDone = t.status === "done";
+    const li = el("li", isDone ? "done" : "");
+    const b = el("button", "tick", isDone ? "✓" : "");
+    b.setAttribute("aria-pressed", isDone); b.setAttribute("aria-label", (isDone ? "Reopen " : "Mark done: ") + t.title);
+    b.onclick = () => toggleTask(t);
+    let mid;
+    if (t.note) {
+      // The note is clamped to two lines; tapping the task text shows all of it.
+      mid = el("button", "tt"); mid.type = "button";
+      mid.setAttribute("aria-expanded", expanded.has(t.id));
+      mid.append(el("span", "t", t.title), el("span", "n clamp", t.note));
+      mid.onclick = () => {
+        const show = mid.getAttribute("aria-expanded") !== "true";
+        mid.setAttribute("aria-expanded", show); show ? expanded.add(t.id) : expanded.delete(t.id);
+      };
+    } else { mid = el("div"); mid.append(el("div", "t", t.title)); }
+    const chips = el("div", "chips");
+    if (t.status === "blocked") chips.append(el("span", "chip bad", "blocked"));
+    else if (t.status === "doing") chips.append(el("span", "chip warn", "doing"));
+    if (!isDone && t.due) {
       const dd = daysUntil(t.due);
-      let chip;
-      if (t.status === "blocked") chip = el("span", "chip bad", "blocked");
-      else if (t.status === "doing") chip = el("span", "chip warn", "doing");
-      else if (t.status !== "done" && dd != null && dd < 0) chip = el("span", "chip bad", "late");
-      else if (t.status !== "done" && t.due) chip = el("span", "chip" + (dd <= 1 ? " warn" : ""), dd === 0 ? "today" : short(t.due));
-      else chip = el("span", "chip", t.group === "now" ? "today" : "week");
-      li.append(b, mid, chip); return li;
-    }));
+      const c = dd != null && dd < 0 ? el("span", "chip bad", "Late") : el("span", "chip" + (dd != null && dd <= 1 ? " warn" : ""), dueLabel(t.due));
+      c.title = "Due " + short(t.due); chips.append(c);
+    }
+    li.append(b, mid, chips); return li;
   }
 
   function renderMoney() {
@@ -284,7 +346,13 @@ form.add input[type=text] { flex: 1 1 200px; }
 
   function renderLog() {
     const list = $("log");
-    const items = state.log.slice().sort((a, b) => String(b.ts).localeCompare(String(a.ts))).slice(0, 15);
+    // Newest 6, skipping older entries that repeat a newer entry's text word for word (old double-logged ticks).
+    const seen = new Set(), items = [];
+    for (const l of state.log.slice().sort((a, b) => String(b.ts).localeCompare(String(a.ts)))) {
+      if (seen.has(l.text)) continue;
+      seen.add(l.text); items.push(l);
+      if (items.length === 6) break;
+    }
     if (!items.length) return setEmpty(list, "Things you finish show up here.");
     list.replaceChildren(...items.map((l) => {
       const li = el("li"); li.append(el("span", "who num", short(l.ts)));
@@ -295,19 +363,22 @@ form.add input[type=text] { flex: 1 1 200px; }
   const renderers = { tasks: renderTasks, money: renderMoney, positions: renderStocks, agents: renderAgents, log: renderLog };
   Object.values(renderers).forEach((f) => f()); renderMarket();
 
-  async function addLog(text) {
-    try { await db.collection("log").add({ ts: new Date().toISOString(), who: "Donya", text }); } catch (e) {}
+  // One log doc per item, keyed by the item's id: ticking writes it, unticking deletes it,
+  // so ticking on, off and on again leaves a single entry. A failed log write never blocks the tick.
+  function syncLog(id, done, text) {
+    const ref = db.collection("log").doc(id);
+    (done ? ref.set({ ts: new Date().toISOString(), who: "Donya", text }) : ref.delete()).catch(() => {});
   }
   async function toggleTask(t) {
     if (!db) return;
     const done = t.status !== "done";
-    try { await db.collection("tasks").doc(t.id).update({ status: done ? "done" : "todo" }); if (done) addLog("Done: " + t.title); }
+    try { await db.collection("tasks").doc(t.id).update({ status: done ? "done" : "todo" }); syncLog("done-" + t.id, done, "Done: " + t.title); }
     catch (e) { $("conn").textContent = "Couldn't save that change. Check your connection and try again."; }
   }
   async function toggleMoney(m) {
     if (!db) return;
     const done = m.status !== "done";
-    try { await db.collection("money").doc(m.id).update({ status: done ? "done" : "open" }); if (done) addLog("Paid / cleared: " + m.title); }
+    try { await db.collection("money").doc(m.id).update({ status: done ? "done" : "open" }); syncLog("paid-" + m.id, done, "Paid / cleared: " + m.title); }
     catch (e) { $("conn").textContent = "Couldn't save that change. Check your connection and try again."; }
   }
 

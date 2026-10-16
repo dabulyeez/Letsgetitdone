@@ -107,8 +107,10 @@ async function smoke() {
   await seed(SEED)
   await page.waitForTimeout(100)
   const seeded = await dump()
-  const firstNow = Object.values(seeded.tasks).filter((t) => t.group === 'now').sort((a, b) => a.order - b.order)[0]
-  check('Right now shows the first open "now" task', (await txt('#now-lead')) === firstNow.title, await txt('#now-lead'))
+  // Same rule as the page: open "now" tasks, soonest due first, undated last, then order.
+  const firstNow = Object.values(seeded.tasks).filter((t) => t.group === 'now' && t.status !== 'done')
+    .sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999') || a.order - b.order)[0]
+  check('Right now shows the soonest-due open "now" task', (await txt('#now-lead')) === firstNow.title, await txt('#now-lead'))
   check('progress line counts done tasks', /^\d+ of \d+ done$/.test(await txt('#task-progress')), await txt('#task-progress'))
   const stocks = await page.locator('#positions').innerText()
   check('stock near its stop gets a "near" chip', /near \$90\.00/i.test(stocks), stocks)
@@ -119,13 +121,28 @@ async function smoke() {
   check('open risky money item is listed first', (await txt('#money li')).includes('DEMOA near stop'), await txt('#money li'))
   check('market summary renders', (await txt('#market-line')).length > 0)
   check('all agents listed', (await page.locator('#agents li').count()) === Object.keys(seeded.agents).length)
+  const doneFold = await page.evaluate(() => { const li = [...document.querySelectorAll('#tasks li.done')]; return { n: li.length, folded: li.filter((x) => x.closest('details') && !x.closest('details').open).length } })
+  check('done tasks sit inside a closed <details>', doneFold.n > 0 && doneFold.folded === doneFold.n, JSON.stringify(doneFold))
   await shot('smoke-2-seeded-desktop')
 
-  await page.locator('#tasks .tick').first().click()
+  // Tick, untick, tick again: the page keeps one log doc per task, so there must never be two "Done:" entries.
+  const tickFor = (label) => page.locator('#tasks').getByRole('button', { name: label, exact: true })
+  const doneLogs = async () => Object.values((await dump()).log || {}).filter((l) => l.text === 'Done: ' + firstNow.title).length
+  await tickFor('Mark done: ' + firstNow.title).click()
   await page.waitForTimeout(100)
   const after = await dump()
   check('ticking a task writes status "done"', Object.values(after.tasks).some((t) => t.title === firstNow.title && t.status === 'done'))
-  check('ticking a task adds a log entry', Object.values(after.log).some((l) => /^Done: /.test(l.text)))
+  let n = await doneLogs()
+  check('ticking a task creates exactly one log entry for it', n === 1, `${n} entries`)
+  await page.click('#tasks details.done-list summary')
+  await tickFor('Reopen ' + firstNow.title).click()
+  await page.waitForTimeout(100)
+  n = await doneLogs()
+  check('unticking it removes that log entry', n === 0, `${n} entries`)
+  await tickFor('Mark done: ' + firstNow.title).click()
+  await page.waitForTimeout(100)
+  n = await doneLogs()
+  check('ticking it again still leaves exactly one log entry', n === 1, `${n} entries`)
 
   await page.fill('#new-task', 'Smoke test task')
   await page.selectOption('#new-group', 'week')
