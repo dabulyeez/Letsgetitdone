@@ -2,6 +2,7 @@
 ## Login Watch (who is signing in to your accounts)
 
 - `monitor/ip-watch.html`: open it in a browser, paste sign-in activity from Gmail, Shopify, your bank and so on, and every IP shows up on a map. Green is yours, red isn't. It also copies a report you can attach to a police or FTC report, and lists the steps to sign every other device out.
+- `monitor/ip-globe.html`: the same check on a 3D night-side globe. Red lines run from you to every sign-in that isn't yours, and tapping one flies the globe there. It also shows the IP and location every website sees for you, and how to hide it with a VPN. It shares your saved IPs and last results with the flat map.
 - `bin/ipcheck`: the same check from the terminal.
   - `bin/ipcheck` shows your IP right now
   - `bin/ipcheck --trust 1.2.3.4` saves an IP as yours

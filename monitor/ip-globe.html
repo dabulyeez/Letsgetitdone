@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Globe</title>
+<style>
+/* 3D night-side globe with a HUD. Shares saved IPs and results with ip-watch.html through localStorage. */
+:root {
+  --bg: #02060c; --panel: rgba(6, 16, 28, 0.82); --ink: #d9ecff; --muted: #7d95ad; --line: rgba(110, 180, 255, 0.22);
+  --accent: #5cc8ff; --good: #3ee08f; --bad: #ff4d5e; --warn: #ffb547;
+  --mono: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+#globe { position: fixed; inset: 0; }
+.hud { position: fixed; z-index: 2; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+       backdrop-filter: blur(6px); padding: 12px 14px; }
+.top { top: 16px; left: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; }
+.top h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.top .clock, #status { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+#status::before { content: "● "; color: var(--good); }
+#status.busy::before { color: var(--warn); animation: blink 0.8s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.left { top: 76px; left: 16px; width: 320px; max-height: calc(100% - 92px); overflow: auto; }
+.right { top: 76px; right: 16px; width: 340px; max-height: calc(100% - 92px); overflow: auto; }
+h2 { margin: 0 0 6px; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+.block + .block { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.muted { color: var(--muted); font-size: 12px; }
+textarea { width: 100%; min-height: 90px; font: 12px var(--mono); color: var(--ink); background: rgba(0,0,0,0.35);
+           border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; }
+button { font: inherit; font-size: 13px; border: 1px solid var(--accent); border-radius: 8px; padding: 7px 12px;
+         background: rgba(92, 200, 255, 0.12); color: var(--accent); cursor: pointer; }
+button:hover { background: rgba(92, 200, 255, 0.24); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.stats { display: flex; gap: 10px; font-family: var(--mono); font-size: 13px; }
+.stats b.good { color: var(--good); } .stats b.bad { color: var(--bad); }
+.me { font-family: var(--mono); font-size: 13px; }
+.me .ip { font-size: 16px; color: var(--warn); }
+ul.contacts { list-style: none; margin: 8px 0 0; padding: 0; }
+ul.contacts li { border-left: 3px solid var(--bad); padding: 6px 8px; margin-bottom: 6px; background: rgba(255, 77, 94, 0.07);
+                 border-radius: 0 6px 6px 0; cursor: pointer; }
+ul.contacts li.good { border-color: var(--good); background: rgba(62, 224, 143, 0.06); }
+ul.contacts li:hover { outline: 1px solid var(--line); }
+.cip { font-family: var(--mono); word-break: break-all; }
+.tag { float: right; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--bad); }
+li.good .tag { color: var(--good); }
+.log { font: 11px/1.5 var(--mono); color: var(--muted); max-height: 120px; overflow: auto; white-space: pre-wrap; }
+a { color: var(--accent); }
+
+@media (max-width: 760px) {
+  #globe { position: relative; height: 58vh; }
+  .hud { position: static; margin: 10px 16px; width: auto; max-height: none; }
+  .top { margin-top: 0; border-radius: 0 0 10px 10px; }
+  body { overflow: auto; }
+}
+</style>
+</head>
+<body>
+<header class="hud top">
+  <h1>Login Globe</h1>
+  <span id="status">Standing by</span>
+  <span class="clock" id="clock"></span>
+  <span class="muted"><a href="ip-watch.html">Flat map and lockdown steps</a></span>
+</header>
+
+<div id="globe"></div>
+
+<aside class="hud left">
+  <div class="block">
+    <h2>Your connection</h2>
+    <div class="me" id="me">Checking...</div>
+    <p class="muted">Every website you visit sees this IP and this rough location. To hide it from them, turn on a VPN, or iCloud Private Relay on iPhone. Then this box will show the VPN's city instead of yours.</p>
+  </div>
+  <div class="block">
+    <h2>Trace sign-ins</h2>
+    <textarea id="paste" placeholder="Paste sign-in activity from Gmail, Shopify, your bank..."></textarea>
+    <div class="row">
+      <button id="scan">Trace IPs</button>
+      <button id="spin">Pause spin</button>
+    </div>
+  </div>
+  <div class="block">
+    <h2>Trace log</h2>
+    <div class="log" id="log">Waiting for sign-in activity.</div>
+  </div>
+</aside>
+
+<aside class="hud right">
+  <div class="block">
+    <h2>Contacts on the globe</h2>
+    <div class="stats" id="stats"><span class="muted">None yet</span></div>
+    <ul class="contacts" id="contacts"></ul>
+    <p class="muted">Tap one to fly there. Red lines run from you to every sign-in that isn't yours. A pin marks the internet provider's area, usually the right city, never a street or a name. The provider can name the person, but only for police or under a subpoena, so put the red ones in your police and FTC reports.</p>
+  </div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
+<script>
+const IMG = "https://cdn.jsdelivr.net/npm/three-globe@2.30.0/example/img/";
+const TRUST_KEY = "loginWatch.trusted", RESULTS_KEY = "loginWatch.results";
+const $ = id => document.getElementById(id);
+const GOOD = "#3ee08f", BAD = "#ff4d5e", ME = "#ffb547";
+
+function load(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+let trusted = load(TRUST_KEY, []);
+let results = load(RESULTS_KEY, []);
+let me = null, spinning = true;
+
+const IPV4 = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
+const IPV6 = /\b(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{0,4}(?::[0-9a-f]{1,4})*\b/gi;
+function isPrivate(ip) {
+  return /^(10\.|127\.|192\.168\.|169\.254\.|0\.)/.test(ip) || /^172\.(1[6-9]|2\d|3[01])\./.test(ip) || /^(fe80|fc|fd|::1)/i.test(ip);
+}
+function extractIps(text) {
+  const found = [...(text.match(IPV4) || []), ...(text.match(IPV6) || []).filter(s => s.split(":").length > 3)];
+  return [...new Set(found)].filter(ip => !isPrivate(ip));
+}
+async function lookup(ip) {
+  const d = await (await fetch("https://ipwho.is/" + encodeURIComponent(ip))).json();
+  if (!d.success) return { ip, error: d.message || "lookup failed" };
+  return { ip, city: d.city, region: d.region, country: d.country, lat: d.latitude, lon: d.longitude,
+           isp: (d.connection && (d.connection.isp || d.connection.org)) || "" };
+}
+const place = r => [r.city, r.region, r.country].filter(Boolean).join(", ");
+const isMine = r => trusted.includes(r.ip);
+function log(line) {
+  const el = $("log");
+  if (el.dataset.started !== "1") { el.textContent = ""; el.dataset.started = "1"; }
+  el.textContent += new Date().toLocaleTimeString() + "  " + line + "\n";
+  el.scrollTop = el.scrollHeight;
+}
+
+// Globe
+const el = $("globe");
+const globe = Globe()(el)
+  .globeImageUrl(IMG + "earth-night.jpg")
+  .bumpImageUrl(IMG + "earth-topology.png")
+  .backgroundImageUrl(IMG + "night-sky.png")
+  .atmosphereColor("#5cc8ff").atmosphereAltitude(0.18)
+  .pointAltitude(d => d.me ? 0.06 : 0.035).pointRadius(d => d.me ? 0.55 : 0.45).pointColor(d => d.color)
+  .pointLabel(d => `<div style="font:12px ui-monospace,monospace;background:#06101cdd;padding:6px 8px;border:1px solid #5cc8ff55;border-radius:6px">
+      <b>${d.ip}</b><br>${d.where}<br>${d.isp || ""}<br><span style="color:${d.color}">${d.me ? "YOU (this device)" : d.mine ? "Yours" : "NOT YOURS"}</span></div>`)
+  .onPointClick(d => fly(d.lat, d.lng))
+  .ringColor(d => t => `rgba(255,77,94,${1 - t})`).ringMaxRadius(4).ringPropagationSpeed(2.5).ringRepeatPeriod(900)
+  .arcColor(() => [ME, BAD]).arcDashLength(0.35).arcDashGap(0.15).arcDashAnimateTime(1800).arcStroke(0.5).arcAltitudeAutoScale(0.4)
+  .labelText(d => d.label).labelSize(0.9).labelDotRadius(0).labelColor(d => d.color).labelResolution(2).labelAltitude(0.04);
+globe.controls().autoRotate = true;
+globe.controls().autoRotateSpeed = 0.35;
+globe.pointOfView({ lat: 30, lng: -90, altitude: 2.4 });
+
+function size() { globe.width(el.clientWidth).height(el.clientHeight); }
+addEventListener("resize", size); size();
+
+function fly(lat, lng) {
+  globe.controls().autoRotate = false; spinning = false; $("spin").textContent = "Resume spin";
+  globe.pointOfView({ lat, lng, altitude: 0.9 }, 1600);
+}
+
+// One label per area: pins within about 1.5 degrees share a label, so nearby cities don't print over each other.
+function labels(pts) {
+  const groups = [];
+  for (const p of pts) {
+    const g = groups.find(g => Math.abs(g[0].lat - p.lat) < 1.5 && Math.abs(g[0].lng - p.lng) < 1.5);
+    g ? g.push(p) : groups.push([p]);
+  }
+  return groups.map(g => {
+    const lead = g.find(p => !p.mine && !p.me) || g.find(p => p.me) || g[0];
+    const name = lead.me ? "YOU" : (lead.where.split(",")[0] || lead.ip);
+    return { lat: lead.lat, lng: lead.lng, color: lead.color, label: g.length > 1 ? `${name} +${g.length - 1}` : name };
+  });
+}
+
+function draw() {
+  const pts = results.filter(r => r.lat != null).map(r => ({
+    ip: r.ip, lat: r.lat, lng: r.lon, where: place(r), isp: r.isp, mine: isMine(r), color: isMine(r) ? GOOD : BAD,
+  }));
+  if (me) pts.push({ ip: me.ip, lat: me.lat, lng: me.lon, where: place(me), isp: me.isp, me: true, color: ME });
+  const bad = pts.filter(p => !p.mine && !p.me);
+  globe.pointsData(pts)
+    .ringsData(bad)
+    .arcsData(me ? bad.map(p => ({ startLat: me.lat, startLng: me.lon, endLat: p.lat, endLng: p.lng })) : [])
+    .labelsData(labels(pts));
+
+  const list = $("contacts");
+  list.innerHTML = "";
+  for (const r of results) {
+    const li = document.createElement("li");
+    li.className = isMine(r) ? "good" : "";
+    li.innerHTML = `<span class="tag"></span><div class="cip"></div><div class="muted"></div>`;
+    li.querySelector(".tag").textContent = isMine(r) ? "YOURS" : "NOT YOURS";
+    li.querySelector(".cip").textContent = r.ip;
+    li.querySelector(".muted").textContent = r.error ? "Couldn't trace: " + r.error : place(r) + (r.isp ? " · " + r.isp : "");
+    if (r.lat != null) li.onclick = () => fly(r.lat, r.lon);
+    list.append(li);
+  }
+  const nBad = results.filter(r => !isMine(r)).length;
+  $("stats").innerHTML = results.length
+    ? `<span><b class="good">${results.length - nBad}</b> yours</span><span><b class="bad">${nBad}</b> not yours</span>`
+    : `<span class="muted">None yet</span>`;
+}
+
+async function scan() {
+  const ips = extractIps($("paste").value);
+  if (!ips.length) { log("No public IP addresses found in the pasted text."); return; }
+  $("status").className = "busy";
+  results = [];
+  for (const [i, ip] of ips.entries()) {
+    $("status").textContent = `Tracing ${i + 1} of ${ips.length}: ${ip}`;
+    let r;
+    try { r = await lookup(ip); } catch { r = { ip, error: "no connection" }; }
+    results.push(r);
+    log(r.error ? `${ip}  ✗ ${r.error}` : `${ip}  → ${place(r)}  [${r.isp || "unknown provider"}]  ${isMine(r) ? "YOURS" : "NOT YOURS"}`);
+    draw();
+    if (r.lat != null && !isMine(r)) globe.pointOfView({ lat: r.lat, lng: r.lon, altitude: 1.6 }, 1200);
+  }
+  save(RESULTS_KEY, results);
+  const nBad = results.filter(r => !isMine(r)).length;
+  $("status").className = "";
+  $("status").textContent = `Trace complete · ${nBad} not yours`;
+  log(`Done. ${nBad} sign-in IP(s) aren't yours. Sign out other devices on that account and change the password.`);
+}
+
+$("scan").onclick = scan;
+$("spin").onclick = () => {
+  spinning = !spinning; globe.controls().autoRotate = spinning;
+  $("spin").textContent = spinning ? "Pause spin" : "Resume spin";
+};
+setInterval(() => { $("clock").textContent = new Date().toLocaleString(); }, 1000);
+
+fetch("https://ipwho.is/").then(r => r.json()).then(d => {
+  if (!d.success) throw 0;
+  me = { ip: d.ip, city: d.city, region: d.region, country: d.country, lat: d.latitude, lon: d.longitude,
+         isp: (d.connection && d.connection.isp) || "" };
+  $("me").innerHTML = `<div class="ip"></div><div></div><div class="muted"></div>`;
+  $("me").children[0].textContent = me.ip;
+  $("me").children[1].textContent = place(me);
+  $("me").children[2].textContent = me.isp;
+  if (!trusted.includes(me.ip)) { trusted.push(me.ip); save(TRUST_KEY, trusted); }
+  draw();
+}).catch(() => { $("me").textContent = "Couldn't check this device's IP."; });
+
+draw();
+if (results.length) log(`Loaded ${results.length} IP(s) from your last trace.`);
+</script>
+</body>
+</html>

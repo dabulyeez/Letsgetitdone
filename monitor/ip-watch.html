@@ -54,6 +54,7 @@ a { color: var(--accent); }
   <header>
     <h1>Login Watch</h1>
     <p class="muted">Paste sign-in activity from your accounts. Every IP address gets a pin on the map. Green means it's yours. Red means it isn't, so go lock that account down.</p>
+    <p><a href="ip-globe.html">Open the 3D globe view</a></p>
   </header>
 
   <section class="panel">
@@ -198,6 +199,7 @@ async function check() {
   }
   if (ips.length) $("status").textContent = `Checked ${ips.length} IP address(es) on ${new Date().toLocaleString()}.`;
   render();
+  try { localStorage.setItem("loginWatch.results", JSON.stringify(results)); } catch {}
 }
 
 function report() {
