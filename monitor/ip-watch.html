@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Watch</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Paste sign-in activity from your accounts; every IP gets a pin. Green = yours, red = not yours. */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --ink: #14202b; --muted: #5b6b78; --line: #d5dde4;
+  --accent: #1f5f8b; --accent-ink: #ffffff;
+  --good: #1f7a4d; --bad: #b3261e; --good-bg: #e3f3ea; --bad-bg: #fbe5e3;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3; --line: #29384a;
+  --accent: #6fb3e3; --accent-ink: #0f161d; --good: #6fd19b; --bad: #ff8a80;
+  --good-bg: #173326; --bad-bg: #3d1c1a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3; --line: #29384a;
+  --accent: #6fb3e3; --accent-ink: #0f161d; --good: #6fd19b; --bad: #ff8a80;
+  --good-bg: #173326; --bad-bg: #3d1c1a; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; display: grid; gap: 16px; }
+h1 { margin: 0; font-size: 1.8rem; }
+h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.muted { color: var(--muted); }
+textarea, input { width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+textarea { min-height: 110px; }
+button { font: inherit; border: 0; border-radius: 8px; padding: 8px 12px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+#map { height: 380px; border-radius: 10px; border: 1px solid var(--line); }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { padding: 4px 10px; border-radius: 999px; font-weight: 700; }
+.pill.good { background: var(--good-bg); color: var(--good); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.ip { font-family: ui-monospace, Menlo, monospace; white-space: nowrap; }
+tr.bad td:first-child { border-left: 4px solid var(--bad); }
+tr.good td:first-child { border-left: 4px solid var(--good); }
+ol { margin: 0; padding-left: 20px; }
+li { margin-bottom: 6px; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Login Watch</h1>
+    <p class="muted">Paste sign-in activity from your accounts. Every IP address gets a pin on the map. Green means it's yours. Red means it isn't, so go lock that account down.</p>
+    <p><a href="ip-globe.html">Open the 3D globe view</a></p>
+  </header>
+
+  <section class="panel">
+    <h2>1. Your own IPs</h2>
+    <p class="muted">These are the connections you trust. The device you're on now is added for you. Add your phone's data IP too: open this page on your phone with Wi-Fi off.</p>
+    <div id="myIpNow" class="muted">Checking this device...</div>
+    <textarea id="trusted" placeholder="One IP per line"></textarea>
+    <div class="row"><button id="saveTrusted" class="ghost">Save my IPs</button></div>
+  </section>
+
+  <section class="panel">
+    <h2>2. Paste sign-in activity</h2>
+    <p class="muted">Copy the whole page or list from Google, Shopify, your bank or anywhere else and paste it here. The IPs get picked out for you.</p>
+    <textarea id="paste" placeholder="Paste here, for example: Windows, Chicago IL, 73.12.44.201, Oct 15"></textarea>
+    <div class="row">
+      <button id="check">Find and map IPs</button>
+      <button id="copyReport" class="ghost">Copy report for police / FTC</button>
+      <button id="clear" class="ghost">Clear</button>
+    </div>
+    <p id="status" class="muted"></p>
+  </section>
+
+  <section class="panel">
+    <div class="stats" id="stats"></div>
+    <div id="map" style="margin-top:10px"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Every IP found</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>IP</th><th>Where (approximate)</th><th>Internet provider</th><th>Yours?</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="4" class="muted">Nothing checked yet.</td></tr></tbody>
+      </table>
+    </div>
+    <p class="muted">The location is the internet provider's area, usually the right city, but not a street address. A VPN or cell carrier can show a city far from the real person. The provider is the only one who knows who used an IP, and they will only release it to police or under a subpoena. Put red IPs in your police report and FTC report.</p>
+  </section>
+
+  <section class="panel">
+    <h2>3. Lock out every IP that isn't yours</h2>
+    <p class="muted">Gmail, Shopify and banks don't let you block one IP. You lock them out by signing everyone out and making the next sign-in need something only you have.</p>
+    <ol>
+      <li><b>Google / Gmail:</b> open <a href="https://myaccount.google.com/device-activity" target="_blank" rel="noopener">Your devices</a>, sign out every device that isn't yours. Then <a href="https://myaccount.google.com/signinoptions/password" target="_blank" rel="noopener">change your password</a> and turn on <a href="https://myaccount.google.com/signinoptions/passkeys" target="_blank" rel="noopener">a passkey</a> or <a href="https://myaccount.google.com/signinoptions/twosv" target="_blank" rel="noopener">2-Step Verification</a> with the Google prompt, not text messages. To see IPs, open Gmail on a computer, scroll to the bottom, click <b>Details</b> next to "Last account activity". For the most protection, join <a href="https://landing.google.com/advancedprotection/" target="_blank" rel="noopener">Advanced Protection</a>.</li>
+      <li><b>Gmail forwarding:</b> check <a href="https://mail.google.com/mail/u/0/#settings/fwdandpop" target="_blank" rel="noopener">Forwarding</a> and <a href="https://mail.google.com/mail/u/0/#settings/filters" target="_blank" rel="noopener">Filters</a>. Thieves often add a rule that copies or hides your mail. Delete any you didn't make.</li>
+      <li><b>Shopify:</b> Settings, then <b>Users</b>, then your account, then <b>Security</b>. Log out all other sessions, turn on two-step authentication, and remove any staff or app you don't recognize.</li>
+      <li><b>Apple ID:</b> <a href="https://account.apple.com" target="_blank" rel="noopener">account.apple.com</a>, then Devices. Remove anything that isn't yours.</li>
+      <li><b>Microsoft / Outlook:</b> <a href="https://account.microsoft.com/activity" target="_blank" rel="noopener">Recent activity</a> shows IPs and a map. Click "Secure your account" on anything that isn't yours.</li>
+      <li><b>Bank, PayPal, Cash App:</b> sign out all devices in security settings and call the number on the back of your card about any red IP.</li>
+      <li><b>Your home Wi-Fi:</b> log in to your router, change the admin password and the Wi-Fi password, then look at the connected devices list for anything you don't own.</li>
+      <li><b>Report it:</b> file at <a href="https://www.identitytheft.gov" target="_blank" rel="noopener">IdentityTheft.gov</a> and with local police. Attach the report you copy from this page.</li>
+    </ol>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const KEY = "loginWatch.trusted";
+const $ = id => document.getElementById(id);
+let results = [];
+let map, layer;
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {} }
+function trustedList() { return $("trusted").value.split(/\s+/).map(s => s.trim()).filter(Boolean); }
+
+const IPV4 = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
+const IPV6 = /\b(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{0,4}(?::[0-9a-f]{1,4})*\b/gi;
+function isPrivate(ip) {
+  return /^(10\.|127\.|192\.168\.|169\.254\.|0\.)/.test(ip) || /^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
+         /^(fe80|fc|fd|::1)/i.test(ip);
+}
+function extractIps(text) {
+  const found = [...(text.match(IPV4) || []), ...(text.match(IPV6) || []).filter(s => s.split(":").length > 3)];
+  return [...new Set(found)].filter(ip => !isPrivate(ip));
+}
+
+async function lookup(ip) {
+  const r = await fetch("https://ipwho.is/" + encodeURIComponent(ip));
+  const d = await r.json();
+  if (!d.success) return { ip, error: d.message || "lookup failed" };
+  return {
+    ip, city: d.city, region: d.region, country: d.country, lat: d.latitude, lon: d.longitude,
+    isp: (d.connection && (d.connection.isp || d.connection.org)) || "",
+  };
+}
+
+function initMap() {
+  if (map || !window.L) return;
+  map = L.map("map").setView([39.8, -98.6], 3);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18, attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+  layer = L.layerGroup().addTo(map);
+}
+
+function render() {
+  const mine = new Set(trustedList());
+  const rows = $("rows");
+  rows.innerHTML = "";
+  if (!results.length) { rows.innerHTML = '<tr><td colspan="4" class="muted">No public IP addresses found in what you pasted.</td></tr>'; }
+  let good = 0, bad = 0;
+  if (layer) layer.clearLayers();
+  const pts = [];
+  for (const r of results) {
+    const isMine = mine.has(r.ip);
+    isMine ? good++ : bad++;
+    const where = r.error ? "Couldn't look up: " + r.error : [r.city, r.region, r.country].filter(Boolean).join(", ");
+    const tr = document.createElement("tr");
+    tr.className = isMine ? "good" : "bad";
+    tr.innerHTML = `<td class="ip"></td><td></td><td></td><td></td>`;
+    // IPs only hold hex digits, dots and colons, so this is safe; IPv6 may wrap at colons.
+    tr.children[0].innerHTML = r.ip.replace(/:/g, ":<wbr>");
+    tr.children[1].textContent = where;
+    tr.children[2].textContent = r.isp || "";
+    if (isMine) tr.children[3].textContent = "Yes";
+    else {
+      const b = document.createElement("button");
+      b.className = "ghost"; b.textContent = "It's me";
+      b.onclick = () => { $("trusted").value = [...trustedList(), r.ip].join("\n"); save(trustedList()); render(); };
+      tr.children[3].append("No ", b);
+    }
+    rows.append(tr);
+    if (layer && r.lat != null) {
+      const color = isMine ? getComputedStyle(document.documentElement).getPropertyValue("--good") : getComputedStyle(document.documentElement).getPropertyValue("--bad");
+      L.circleMarker([r.lat, r.lon], { radius: 9, color, fillColor: color, fillOpacity: 0.7 })
+        .bindPopup(`<b>${r.ip}</b><br>${where}<br>${r.isp || ""}<br>${isMine ? "Yours" : "NOT yours"}`)
+        .addTo(layer);
+      pts.push([r.lat, r.lon]);
+    }
+  }
+  if (map && pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 8 });
+  $("stats").innerHTML = results.length
+    ? `<span class="pill good">${good} yours</span><span class="pill bad">${bad} not yours</span>` : "";
+}
+
+async function check() {
+  const ips = extractIps($("paste").value);
+  $("status").textContent = ips.length ? `Looking up ${ips.length} IP address(es)...` : "No public IP addresses found. Make sure the text you copied shows IP numbers.";
+  results = [];
+  for (const ip of ips) {
+    try { results.push(await lookup(ip)); } catch { results.push({ ip, error: "no connection" }); }
+  }
+  if (ips.length) $("status").textContent = `Checked ${ips.length} IP address(es) on ${new Date().toLocaleString()}.`;
+  render();
+  try { localStorage.setItem("loginWatch.results", JSON.stringify(results)); } catch {}
+}
+
+function report() {
+  const mine = new Set(trustedList());
+  const lines = [`Unrecognized sign-in IPs, compiled ${new Date().toLocaleString()}`, ""];
+  for (const r of results.filter(r => !mine.has(r.ip))) {
+    lines.push(`${r.ip} | ${[r.city, r.region, r.country].filter(Boolean).join(", ") || r.error} | ${r.isp || "unknown provider"}`);
+  }
+  lines.push("", "My own IPs (not suspicious): " + ([...mine].join(", ") || "none listed"));
+  const text = lines.join("\n");
+  navigator.clipboard.writeText(text).then(
+    () => $("status").textContent = "Report copied. Paste it into your police or FTC report.",
+    () => { $("paste").value = text; $("status").textContent = "Couldn't copy automatically; the report is in the box above."; });
+}
+
+$("trusted").value = load().join("\n");
+$("saveTrusted").onclick = () => { save(trustedList()); render(); $("status").textContent = "Your IPs are saved on this device."; };
+$("check").onclick = check;
+$("copyReport").onclick = report;
+$("clear").onclick = () => { $("paste").value = ""; results = []; render(); $("status").textContent = ""; };
+
+initMap();
+fetch("https://ipwho.is/").then(r => r.json()).then(d => {
+  if (!d.success) throw 0;
+  $("myIpNow").textContent = `This device: ${d.ip} (${[d.city, d.region].filter(Boolean).join(", ")}, ${d.connection && d.connection.isp || ""})`;
+  if (!trustedList().includes(d.ip)) { $("trusted").value = [...trustedList(), d.ip].join("\n"); save(trustedList()); }
+}).catch(() => { $("myIpNow").textContent = "Couldn't check this device's IP. Add it by hand."; });
+</script>
+</body>
+</html>
