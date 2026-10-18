@@ -9,3 +9,13 @@
   - `bin/ipcheck --trust 1.2.3.4` saves an IP as yours
   - `bin/ipcheck 73.12.44.201` looks up an IP
   - `pbpaste | bin/ipcheck` (Mac) checks everything you copied
+
+## Live Watch (your own price watcher)
+
+`monitor/live-watch.html`, also at https://dabulyeez.github.io/Letsgetitdone/monitor/live-watch.html once merged.
+
+- Crypto prices are live, tick by tick, from Coinbase. No key needed.
+- Stock prices are live from Finnhub after you paste a free key from finnhub.io in the settings panel.
+- Type your entry, stop and target on any card. The card shows how far you are from each, the reward-to-risk ratio, and warns when a "signal" entry is far from the real price.
+- Alerts (on-page, sound, and notifications when added to the Home Screen) fire at your stop, your target, and within 3% of your stop.
+- Watches only. It never buys or sells. Your symbols, plans and key stay in your own browser, not in this public repo.
