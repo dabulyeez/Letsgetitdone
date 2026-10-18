@@ -5,12 +5,14 @@ description: Opens Donya's Daily Monitor board and reads out everything on it in
 
 # Show monitor
 
-The Daily Monitor is one private claude.ai page that holds everything: https://claude.ai/artifact/LamtUS6ZKmsBJntZ1agBTs
+The Daily Monitor is his private claude.ai page that holds everything. Two links:
+- The page he looks at, the Daily Command Center: https://claude.ai/artifact/W6qUDqUxfQhYKxMF43Br3a
+- The board the agents write to and the one you read data from (it holds `tasks`, `money`, `positions`, `market`, `agents`, `log`; the Command Center does not): https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt
 
 It already replaces needing several pages open — email, calendar, Shopify, a stock app. When Donya says "show monitor", pull every collection and give him the full picture in one reply, so he never has to go find it himself.
 
-1. Open the board for him: Artifact tool, `action: "open"`, the `url` above. Print the link too so he can tap it.
-2. Load ArtifactData via ToolSearch ("select:ArtifactData") and read every collection: `tasks`, `money`, `positions`, `market/today` (a single doc), `agents`, and the latest few `log` entries (`list` with a small limit, newest first if possible, or just read them and sort by `ts`).
+1. Open the Command Center for him: Artifact tool, `action: "open"`, with the Daily Command Center link above. Print the link too so he can tap it.
+2. Load ArtifactData via ToolSearch ("select:ArtifactData") and read every collection from the board link above (not the Command Center): `tasks`, `money`, `positions`, `market/today` (a single doc), `agents`, and the latest few `log` entries (`list` with a small limit, newest first if possible, or just read them and sort by `ts`).
 3. Give him one complete status, in this order, each as 1-3 short lines — no headers needed, just talk through it plainly:
    - **Right now**: the first open task in the `now` group. If none, say the day's list is clear.
    - **Money**: any `money` doc with `risk: true` and `status: "open"` first (bills overdue, stop-loss alerts), then anything else open.

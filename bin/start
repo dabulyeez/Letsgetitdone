@@ -1,7 +1,7 @@
 #!/bin/sh
 # Opens Donya's full setup: the Daily Monitor and the Stock Watch screen.
-MONITOR="https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt"
-STOCKS="https://claude.ai/artifact/VFdYdfdFUqpdujybZfmSoM"
+MONITOR="https://claude.ai/artifact/W6qUDqUxfQhYKxMF43Br3a"
+STOCKS="https://claude.ai/artifact/7kKK45sXXXor9qqMw7D9t9"
 
 open_url() {
   if command -v open >/dev/null 2>&1; then open "$1"
@@ -16,7 +16,7 @@ echo ""
 echo "  Daily Monitor  - tasks, bills, agents"
 open_url "$MONITOR"
 sleep 1
-echo "  Stock Watch    - positions and stop-loss"
+echo "  Stock Monitor  - positions and stop-loss"
 open_url "$STOCKS"
 echo ""
 echo "Your IP right now:"
