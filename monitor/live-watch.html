@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Live Watch">
+<title>Live Watch</title>
+<style>
+/* One card per symbol: live price, a chart with your entry/stop/target lines, and how close you are to each.
+   Watches only: this page never places a trade. Everything you type stays in this browser. */
+:root {
+  --bg: #0b0d14; --panel: #151925; --panel-2: #1c2130; --ink: #eef1f8; --muted: #8d96ad; --line: #262c3d;
+  --accent: #6c6cff; --up: #31c48d; --down: #f26d6d; --warn: #f2b24c;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root {
+  --bg: #f4f5fa; --panel: #ffffff; --panel-2: #eef0f7; --ink: #151827; --muted: #5d6680; --line: #dde1ec;
+  --accent: #4b4bdf; --up: #12875a; --down: #c93a3a; --warn: #a76a00; color-scheme: light; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, "Segoe UI", system-ui, sans-serif;
+       padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)); }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.01em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.chip { font: 600 12px var(--mono); padding: 4px 9px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+.chip::before { content: "● "; }
+.chip.on { color: var(--up); } .chip.off { color: var(--warn); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+.muted { color: var(--muted); font-size: 13px; margin: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input { font: inherit; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-width: 0; }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font-weight: 600; font-size: 14px; font-family: inherit; border: 0; border-radius: 10px; padding: 9px 14px; background: var(--accent); color: #fff; cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+button.small { padding: 6px 10px; font-size: 13px; }
+#alerts:empty { display: none; }
+.alert { border-left: 4px solid var(--warn); background: var(--panel); border-radius: 0 12px 12px 0; padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.alert.down { border-color: var(--down); } .alert.up { border-color: var(--up); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.sym { font-weight: 700; font-size: 1.05rem; }
+.kind { font-size: 12px; color: var(--muted); }
+.price { font: 700 1.45rem var(--mono); text-align: right; font-variant-numeric: tabular-nums; transition: color .25s; }
+.price.tick-up { color: var(--up); } .price.tick-down { color: var(--down); }
+.chg { font: 600 12px var(--mono); text-align: right; }
+.chg.up { color: var(--up); } .chg.down { color: var(--down); }
+svg.spark { width: 100%; height: 92px; display: block; }
+.plan { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.plan label { font-size: 11px; color: var(--muted); display: grid; gap: 3px; }
+.plan input { width: 100%; font: 600 14px var(--mono); padding: 7px 8px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 13px; }
+.stats b { font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.badge { justify-self: start; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+.badge.hit-stop { background: color-mix(in srgb, var(--down) 18%, transparent); color: var(--down); }
+.badge.near-stop, .badge.far { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+.badge.hit-target { background: color-mix(in srgb, var(--up) 18%, transparent); color: var(--up); }
+.card-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.rm { background: transparent; color: var(--muted); padding: 4px 6px; font-weight: 500; font-size: 12px; }
+details summary { cursor: pointer; font-weight: 600; }
+footer { color: var(--muted); font-size: 12px; text-align: center; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Live Watch</h1>
+    <div class="chips"><span class="chip off" id="cryptoChip">Crypto connecting</span><span class="chip off" id="stockChip">Stocks need a key</span></div>
+  </header>
+
+  <div id="alerts" class="grid" style="grid-template-columns:1fr"></div>
+
+  <section class="panel row">
+    <input id="addSym" placeholder="Add a symbol: AAPL or BTC-USD" autocapitalize="characters" autocomplete="off" style="flex:1 1 200px">
+    <button id="addBtn">Add</button>
+    <button id="notifyBtn" class="ghost">Turn on alerts</button>
+  </section>
+
+  <section class="grid" id="cards"></section>
+
+  <details class="panel" id="setup">
+    <summary>Stock prices and settings</summary>
+    <p class="muted" style="margin-top:8px">Crypto is live from Coinbase with no setup. For live stock prices, get a free key at <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io</a> (email sign-up, no card), then paste it here. It is saved only in this browser and only sent to Finnhub.</p>
+    <div class="row" style="margin-top:8px">
+      <input id="fhKey" placeholder="Finnhub key" autocomplete="off" style="flex:1 1 220px">
+      <button id="saveKey" class="small">Save key</button>
+    </div>
+    <p class="muted" style="margin-top:10px">Alerts fire when a price reaches your stop or target, or comes within 3% of your stop. On iPhone, notifications work after you tap Share, then Add to Home Screen, and open it from there.</p>
+  </details>
+
+  <footer>Watches only. This page never buys or sells. Crypto prices: Coinbase. Stock prices: Finnhub. Not financial advice.</footer>
+</div>
+
+<script>
+const STORE = "liveWatch.v1";
+const DEFAULTS = ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "AAPL", "JPM", "LLY", "NVDA"];
+const $ = id => document.getElementById(id);
+
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(STORE)); if (s && Array.isArray(s.items)) return s; } catch {}
+  return { items: DEFAULTS.map(sym => ({ sym })), key: "" };
+}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch {} }
+
+const state = load();
+const live = {};        // sym -> {price, open, prev, ticks: [[t, p]], err, last}
+const fired = {};       // sym:kind -> true, so each alert fires once per crossing
+const isCrypto = s => /^[A-Z0-9]+-[A-Z]+$/.test(s);
+const fmt = n => n == null || isNaN(n) ? "—" : n >= 1000 ? n.toLocaleString(undefined, { maximumFractionDigits: 2 })
+  : n >= 1 ? n.toFixed(2) : n.toPrecision(4);
+const num = v => { const n = parseFloat(String(v ?? "").replace(/[$,\s]/g, "")); return isFinite(n) ? n : null; };
+const L = s => (live[s] ||= { ticks: [] });
+
+// ---------- cards ----------
+function cardHTML(it) {
+  return `<div class="top"><div><div class="sym"></div><div class="kind"></div></div>
+      <div><div class="price">—</div><div class="chg">&nbsp;</div></div></div>
+    <svg class="spark" viewBox="0 0 300 92" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="plan">
+      <label>Entry<input inputmode="decimal" data-f="entry" placeholder="—"></label>
+      <label>Stop<input inputmode="decimal" data-f="stop" placeholder="—"></label>
+      <label>Target<input inputmode="decimal" data-f="target" placeholder="—"></label>
+    </div>
+    <div class="stats"></div>
+    <div class="card-foot"><span class="badge">Add your plan</span><button class="rm">Remove</button></div>`;
+}
+function buildCards() {
+  const host = $("cards");
+  host.innerHTML = "";
+  for (const it of state.items) {
+    const el = document.createElement("article");
+    el.className = "card"; el.dataset.sym = it.sym; el.innerHTML = cardHTML(it);
+    el.querySelector(".sym").textContent = it.sym;
+    el.querySelector(".kind").textContent = isCrypto(it.sym) ? "Crypto · Coinbase" : "Stock · Finnhub";
+    el.querySelectorAll(".plan input").forEach(inp => {
+      inp.value = it[inp.dataset.f] ?? "";
+      inp.addEventListener("input", () => { it[inp.dataset.f] = inp.value.trim(); save(); draw(it.sym); });
+    });
+    el.querySelector(".rm").onclick = () => {
+      state.items = state.items.filter(x => x.sym !== it.sym); save(); buildCards(); resubscribe();
+    };
+    host.append(el);
+    draw(it.sym);
+  }
+}
+
+function draw(sym) {
+  const el = document.querySelector(`.card[data-sym="${CSS.escape(sym)}"]`);
+  const it = state.items.find(x => x.sym === sym);
+  if (!el || !it) return;
+  const d = L(sym), p = d.price;
+  const priceEl = el.querySelector(".price");
+  priceEl.textContent = d.err ? d.err : p != null ? "$" + fmt(p) : (!isCrypto(sym) && !state.key ? "Needs key" : "…");
+  priceEl.style.fontSize = d.err || (p == null && !state.key && !isCrypto(sym)) ? "14px" : "";
+  const base = d.open ?? d.prev;
+  const chg = el.querySelector(".chg");
+  if (p != null && base) {
+    const pct = (p - base) / base * 100;
+    chg.textContent = `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct).toFixed(2)}% ${isCrypto(sym) ? "24h" : "today"}`;
+    chg.className = "chg " + (pct >= 0 ? "up" : "down");
+  }
+
+  const entry = num(it.entry), stop = num(it.stop), target = num(it.target);
+  const stats = el.querySelector(".stats"), badge = el.querySelector(".badge");
+  const rows = [];
+  let label = "Add your plan", cls = "";
+  if (p != null && (entry || stop || target)) {
+    if (stop) rows.push(["To stop", `${((p - stop) / p * 100).toFixed(1)}%`]);
+    if (target) rows.push(["To target", `${((target - p) / p * 100).toFixed(1)}%`]);
+    if (entry && stop && target && entry > stop) rows.push(["Reward : risk", `${((target - entry) / (entry - stop)).toFixed(2)} : 1`]);
+    if (entry) rows.push(["From entry", `${((p - entry) / entry * 100).toFixed(1)}%`]);
+    label = "Watching"; cls = "";
+    if (entry && Math.abs(p - entry) / p > 0.25) { label = `Entry is ${Math.round(Math.abs(p - entry) / p * 100)}% away from the real price`; cls = "far"; }
+    if (stop && p <= stop) { label = "At or below your stop"; cls = "hit-stop"; }
+    else if (target && p >= target) { label = "Target reached"; cls = "hit-target"; }
+    else if (stop && (p - stop) / p < 0.03) { label = "Within 3% of your stop"; cls = "near-stop"; }
+  }
+  stats.innerHTML = "";
+  for (const [k, v] of rows) { const s = document.createElement("span"); s.textContent = k; const b = document.createElement("b"); b.textContent = v; stats.append(s, b); }
+  badge.textContent = label; badge.className = "badge " + cls;
+  spark(el.querySelector("svg"), d.ticks, { entry, stop, target, p }, base);
+  checkAlerts(sym, p, stop, target);
+}
+
+// Chart: recent prices, with your entry/stop/target drawn as dashed lines when they are near the price.
+function spark(svg, ticks, lv, base) {
+  const W = 300, H = 92, pts = ticks.slice(-300);
+  svg.style.display = pts.length < 2 ? "none" : "";
+  if (pts.length < 2) { svg.innerHTML = ""; return; }
+  const vals = pts.map(t => t[1]);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const lines = [["entry", lv.entry, "var(--muted)"], ["stop", lv.stop, "var(--down)"], ["target", lv.target, "var(--up)"]]
+    .filter(([, v]) => v && lv.p && Math.abs(v - lv.p) / lv.p < 0.3);
+  for (const [, v] of lines) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  if (hi === lo) { hi += 1; lo -= 1; }
+  const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const t0 = pts[0][0], t1 = pts[pts.length - 1][0] || t0 + 1;
+  const x = t => (t - t0) / ((t1 - t0) || 1) * W, y = v => H - (v - lo) / (hi - lo) * H;
+  const path = pts.map((q, i) => `${i ? "L" : "M"}${x(q[0]).toFixed(1)},${y(q[1]).toFixed(1)}`).join("");
+  const up = vals[vals.length - 1] >= (base || vals[0]), c = up ? "var(--up)" : "var(--down)";
+  svg.innerHTML = `<defs><linearGradient id="g${svg.closest('.card').dataset.sym.replace(/\W/g, '')}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${c}" stop-opacity=".28"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${path}L${W},${H}L0,${H}Z" fill="url(#g${svg.closest('.card').dataset.sym.replace(/\W/g, '')})"/>
+    <path d="${path}" fill="none" stroke="${c}" stroke-width="1.8" vector-effect="non-scaling-stroke"/>` +
+    lines.map(([, v, col]) => `<line x1="0" x2="${W}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${col}" stroke-dasharray="4 4" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join("");
+}
+
+// ---------- alerts ----------
+let audio;
+function beep() { try { audio ||= new AudioContext(); const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = 880; g.gain.value = 0.08; o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + 0.25); } catch {} }
+function alertNow(sym, kind, text) {
+  const key = sym + ":" + kind;
+  if (fired[key]) return; fired[key] = true;
+  const box = document.createElement("div");
+  box.className = "alert " + (kind === "target" ? "up" : "down");
+  box.innerHTML = `<span></span><button class="small ghost">Dismiss</button>`;
+  box.firstChild.textContent = `${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} · ${text}`;
+  box.querySelector("button").onclick = () => box.remove();
+  $("alerts").prepend(box);
+  beep();
+  try { if (Notification.permission === "granted") new Notification("Live Watch", { body: text }); } catch {}
+}
+function checkAlerts(sym, p, stop, target) {
+  if (p == null) return;
+  if (stop && p <= stop) alertNow(sym, "stop", `${sym} is at $${fmt(p)}, at or below your stop of $${fmt(stop)}.`);
+  else { delete fired[sym + ":stop"]; if (stop && (p - stop) / p < 0.03) alertNow(sym, "near", `${sym} is at $${fmt(p)}, within 3% of your stop of $${fmt(stop)}.`); else delete fired[sym + ":near"]; }
+  if (target && p >= target) alertNow(sym, "target", `${sym} reached $${fmt(p)}, at or above your target of $${fmt(target)}.`);
+  else delete fired[sym + ":target"];
+}
+
+// ---------- crypto: Coinbase, live ticks ----------
+let cb, cbRetry = 1000;
+const cryptoSyms = () => state.items.map(i => i.sym).filter(isCrypto);
+async function seedCrypto(sym) {
+  try {
+    const [stats, candles] = await Promise.all([
+      fetch(`https://api.exchange.coinbase.com/products/${sym}/stats`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+      fetch(`https://api.exchange.coinbase.com/products/${sym}/candles?granularity=300`).then(r => r.ok ? r.json() : []),
+    ]);
+    const d = L(sym);
+    d.open = +stats.open; if (d.price == null) d.price = +stats.last;
+    if (Array.isArray(candles) && candles.length) {
+      const hist = candles.map(c => [c[0] * 1000, c[4]]).reverse();   // oldest first
+      const last = hist[hist.length - 1][0];
+      d.ticks = hist.concat(d.ticks.filter(t => t[0] > last));       // keep live ticks that came in first
+    }
+    d.err = null;
+  } catch (e) { L(sym).err = e === 404 ? "Not on Coinbase" : null; }
+  draw(sym);
+}
+function connectCrypto() {
+  const syms = cryptoSyms();
+  if (cb) { cb.onclose = null; cb.close(); cb = null; }
+  if (!syms.length) { $("cryptoChip").textContent = "No crypto"; return; }
+  cb = new WebSocket("wss://ws-feed.exchange.coinbase.com");
+  cb.onopen = () => {
+    cbRetry = 1000;
+    cb.send(JSON.stringify({ type: "subscribe", product_ids: syms, channels: ["ticker"] }));
+    $("cryptoChip").textContent = "Crypto live"; $("cryptoChip").className = "chip on";
+  };
+  cb.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if (m.type !== "ticker" || !m.product_id) return;
+    tick(m.product_id, +m.price, Date.parse(m.time) || Date.now());
+    if (m.open_24h) L(m.product_id).open = +m.open_24h;
+  };
+  cb.onclose = () => {
+    $("cryptoChip").textContent = "Crypto reconnecting"; $("cryptoChip").className = "chip off";
+    setTimeout(connectCrypto, cbRetry); cbRetry = Math.min(cbRetry * 2, 30000);
+  };
+}
+
+// ---------- stocks: Finnhub (free key), live trades plus a quote every minute ----------
+let fh, fhRetry = 2000, fhTimer;
+const stockSyms = () => state.items.map(i => i.sym).filter(s => !isCrypto(s));
+async function quoteStocks() {
+  if (!state.key) return;
+  for (const sym of stockSyms()) {
+    try {
+      const q = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${encodeURIComponent(state.key)}`).then(r => r.json());
+      const d = L(sym);
+      if (q && q.c) { d.prev = q.pc; d.err = null; if (!d.lastTrade || Date.now() - d.lastTrade > 60000) tick(sym, q.c, (q.t || Date.now() / 1000) * 1000); }
+      else if (q && q.error) { d.err = "Key not accepted"; draw(sym); }
+      else { d.err = "No price found"; draw(sym); }
+    } catch { /* keep the last price */ }
+  }
+}
+function connectStocks() {
+  clearInterval(fhTimer);
+  if (fh) { fh.onclose = null; fh.close(); fh = null; }
+  const syms = stockSyms();
+  if (!state.key) { $("stockChip").textContent = "Stocks need a key"; $("stockChip").className = "chip off"; syms.forEach(draw); return; }
+  quoteStocks(); fhTimer = setInterval(quoteStocks, 60000);
+  if (!syms.length) return;
+  fh = new WebSocket(`wss://ws.finnhub.io?token=${encodeURIComponent(state.key)}`);
+  fh.onopen = () => {
+    fhRetry = 2000;
+    syms.forEach(s => fh.send(JSON.stringify({ type: "subscribe", symbol: s })));
+    $("stockChip").textContent = "Stocks live"; $("stockChip").className = "chip on";
+  };
+  fh.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if (m.type === "trade") for (const t of m.data || []) { L(t.s).lastTrade = Date.now(); tick(t.s, t.p, t.t); }
+  };
+  fh.onclose = () => {
+    $("stockChip").textContent = "Stocks reconnecting"; $("stockChip").className = "chip off";
+    setTimeout(connectStocks, fhRetry); fhRetry = Math.min(fhRetry * 2, 60000);
+  };
+}
+
+// ---------- shared ----------
+const pending = new Set();
+function tick(sym, price, t) {
+  if (!isFinite(price)) return;
+  const d = L(sym);
+  const prev = d.price;
+  d.price = price; d.err = null;
+  const last = d.ticks[d.ticks.length - 1];
+  if (!last || t - last[0] > 5000) d.ticks.push([t, price]); else last[1] = price;
+  if (d.ticks.length > 600) d.ticks.splice(0, d.ticks.length - 600);
+  const el = document.querySelector(`.card[data-sym="${CSS.escape(sym)}"] .price`);
+  if (el && prev != null && price !== prev) {
+    el.classList.remove("tick-up", "tick-down"); void el.offsetWidth;
+    el.classList.add(price > prev ? "tick-up" : "tick-down");
+    clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("tick-up", "tick-down"), 600);
+  }
+  pending.add(sym);
+}
+// Redraw changed cards at most 4 times a second so a busy feed does not drain the battery.
+setInterval(() => { for (const s of pending) draw(s); pending.clear(); }, 250);
+
+// Coinbase limits public requests per second, so load each coin's history one at a time.
+async function seedAll() { for (const s of cryptoSyms()) { await seedCrypto(s); await new Promise(r => setTimeout(r, 250)); } }
+function resubscribe() { connectCrypto(); connectStocks(); seedAll(); }
+
+$("addBtn").onclick = () => {
+  let s = $("addSym").value.trim().toUpperCase().replace(/\s+/g, "");
+  if (!s) return;
+  if (/^[A-Z0-9]{2,6}USD$/.test(s)) s = s.replace(/USD$/, "-USD"); // BTCUSD -> BTC-USD
+  if (state.items.some(i => i.sym === s)) { $("addSym").value = ""; return; }
+  state.items.unshift({ sym: s }); save(); $("addSym").value = ""; buildCards(); resubscribe();
+};
+$("addSym").addEventListener("keydown", e => { if (e.key === "Enter") $("addBtn").click(); });
+$("fhKey").value = state.key || "";
+$("saveKey").onclick = () => { state.key = $("fhKey").value.trim(); save(); connectStocks(); $("saveKey").textContent = "Saved"; setTimeout(() => $("saveKey").textContent = "Save key", 1500); };
+$("notifyBtn").onclick = async () => {
+  beep(); // unlocks sound on iPhone
+  try { const r = await Notification.requestPermission(); $("notifyBtn").textContent = r === "granted" ? "Alerts on" : "Sound alerts on"; }
+  catch { $("notifyBtn").textContent = "Sound alerts on"; }
+};
+if (!state.key) $("setup").open = true;
+
+buildCards();
+resubscribe();
+</script>
+</body>
+</html>
