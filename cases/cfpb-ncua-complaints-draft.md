@@ -12,6 +12,8 @@ Before you submit:
 
 ## 1. CFPB complaint (consumerfinance.gov/complaint)
 
+Online is best because you can attach files. If you need help, call the CFPB at (855) 411-2372.
+
 **Pick on the form** (the menu wording changes sometimes, so choose the closest match):
 - **Company:** Navy Federal Credit Union.
 - **Product:** *Payday loan, title loan, personal loan, or advance loan* → personal or installment loan. If the 3115 loan was a car loan, pick *Vehicle loan or lease* instead.
@@ -53,7 +55,7 @@ Before you submit:
 
 **What happened (paste):**
 
-> On October 9–10, 2026, there were charges on my Navy Federal [debit card / credit card] ending [LAST 4] that I did not make or authorize, totaling about $[AMOUNT]. I am also an identity theft victim. A $1,700 loan was opened in my name at Navy Federal without my permission, and I am filing a separate complaint about it.
+> On October 9–10, 2026, there were charges on my Navy Federal [debit card / credit card] ending 4475 that I did not make or authorize, totaling about $[AMOUNT]. I am also an identity theft victim. A $1,700 loan was opened in my name at Navy Federal without my permission, and I am filing a separate complaint about it.
 >
 > On [DATE] I reported the charges to Navy Federal by [phone / secure message / branch] and asked them to freeze the card and refund the charges. [WHAT THEY TOLD YOU, e.g. "They issued a new card and said they would investigate."]
 >
@@ -69,6 +71,8 @@ Before you submit:
 
 ## 2. NCUA complaint (mycreditunion.gov → Consumer Assistance Center → file a complaint)
 
+NCUA Consumer Assistance Center phone: 1-800-755-1030.
+
 The NCUA usually wants you to complain to the credit union first. You've done that, so say so. For a credit union as large as Navy Federal, the NCUA may send part of your complaint over to the CFPB. That's normal, so file at the CFPB first and give the NCUA your CFPB complaint number.
 
 **Credit union:** Navy Federal Credit Union, Vienna, VA
@@ -77,7 +81,7 @@ The NCUA usually wants you to complain to the credit union first. You've done th
 
 > I am filing a complaint against Navy Federal Credit Union about how it is handling identity theft on my membership.
 >
-> A $1,700 loan ending 3115 was opened in my name on 08/21/2025 without my knowledge or permission. I reported it to Navy Federal as fraud on [DATE], along with unauthorized transactions on my [card type] ending [LAST 4] from October 9–10, 2026. I have filed an FTC Identity Theft Report ([DATE]), sent identity theft blocks to all three credit bureaus ([DATE]), frozen my credit, and sent Navy Federal its claim form and supporting documents ([DATE]).
+> A $1,700 loan ending 3115 was opened in my name on 08/21/2025 without my knowledge or permission. I reported it to Navy Federal as fraud on [DATE], along with unauthorized transactions on my [card type] ending 4475 from October 9–10, 2026. I have filed an FTC Identity Theft Report ([DATE]), sent identity theft blocks to all three credit bureaus ([DATE]), frozen my credit, and sent Navy Federal its claim form and supporting documents ([DATE]).
 >
 > More than 30 days later, Navy Federal has [not resolved the claim / denied it without explanation / continued to report the loan or seek payment]. I also filed CFPB complaint numbers [CFPB # for the loan] and [CFPB # for the card charges] on [DATE].
 >
