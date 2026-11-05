@@ -1,6 +1,6 @@
 # CFPB and NCUA complaints about Navy Federal: drafts to paste in
 
-**When to send:** only if Navy Federal hasn't fixed this by **Nov 13, 2026** (about 30 days after you reported it), or sooner if they refuse in writing. Send the two CFPB complaints first (one for the loan, one for the card charges). Navy Federal is a big credit union, so the CFPB is the main agency for this. The NCUA complaint is a backup and goes in if the CFPB doesn't get it resolved.
+**When to send:** only if Navy Federal hasn't fixed this by **Nov 19, 2026** (about 30 days after you reported it on or about Oct 20), or sooner if they refuse in writing. Send the two CFPB complaints first (one for the loan, one for the card charges). Navy Federal is a big credit union, so the CFPB is the main agency for this. The NCUA complaint is a backup and goes in if the CFPB doesn't get it resolved.
 
 Before you submit:
 - Fill every [BRACKET]. Delete this top section. The dates come from the board and say "on or about"; check them against your FTC report PDF, phone call log and mail receipts.
