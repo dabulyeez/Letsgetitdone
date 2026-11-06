@@ -72,6 +72,8 @@ a { color: var(--accent); }
 .views { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; }
 .views button { border: 0; background: transparent; color: var(--muted); padding: 5px 10px; }
 .views button[aria-pressed="true"] { background: rgba(108,198,255,0.16); color: var(--accent); }
+.views a.street { color: var(--muted); padding: 5px 10px; text-decoration: none; border-radius: 6px; }
+.views a.street:hover { color: var(--accent); }
 .strip { left: 412px; right: 352px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; padding-block: 12px; }
 .strip > div { min-width: 0; }
 .chart text { font: 500 10px var(--mono); fill: var(--muted); }
@@ -100,7 +102,7 @@ a { color: var(--accent); }
   <h1>Login Globe</h1>
   <span class="live" id="live">Connecting</span>
   <div class="views" role="group" aria-label="Map view">
-    <button id="v3d" aria-pressed="true">3D globe</button><button id="v2d" aria-pressed="false">Flat map</button>
+    <button id="v3d" aria-pressed="true">3D globe</button><button id="v2d" aria-pressed="false">Flat map</button><a id="vstreet" class="street" href="street-map.html">Street map</a>
   </div>
   <div class="pills" id="pills"></div>
 </header>
@@ -207,6 +209,7 @@ $("v3d").onclick = () => setView("3d");
 $("v2d").onclick = () => setView("2d");
 
 function fly(lat, lon) {
+  $("vstreet").href = `street-map.html?lat=${lat}&lon=${lon}`;
   if (view === "2d") return zoomFlat(lat, lon);
   globe.controls().autoRotate = false;
   globe.pointOfView({ lat, lng: lon, altitude: 0.7 }, 1600);
