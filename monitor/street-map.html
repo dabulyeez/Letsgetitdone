@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Street Map 3D</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<style>
+/* Street-level map in the Google Maps style: streets, place names, shops and 3D buildings. Nothing is saved or sent anywhere except the map tiles and your searches. */
+:root {
+  --panel: rgba(255, 255, 255, 0.96); --ink: #1f1f1f; --muted: #5f6368; --line: #dadce0; --accent: #1a73e8;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --panel: rgba(32, 33, 36, 0.96); --ink: #e8eaed; --muted: #9aa0a6; --line: #3c4043; --accent: #8ab4f8; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font: 15px/1.4 "Google Sans", Roboto, "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #e8eaed; }
+#map { position: fixed; inset: 0; }
+.search { position: fixed; z-index: 2; top: 12px; left: 12px; right: 12px; max-width: 420px; display: flex; align-items: center;
+          background: var(--panel); border-radius: 24px; box-shadow: var(--shadow); padding: 4px 6px 4px 16px; }
+.search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; color: var(--ink); padding: 10px 0; }
+.search button { border: 0; background: transparent; color: var(--muted); font-size: 18px; padding: 8px 10px; cursor: pointer; border-radius: 50%; }
+.results { position: fixed; z-index: 2; top: 64px; left: 12px; right: 12px; max-width: 420px; background: var(--panel);
+           border-radius: 12px; box-shadow: var(--shadow); margin: 0; padding: 4px 0; list-style: none; display: none; max-height: 50vh; overflow: auto; }
+.results li { padding: 10px 16px; cursor: pointer; border-top: 1px solid var(--line); }
+.results li:first-child { border-top: 0; }
+.results li small { display: block; color: var(--muted); }
+.tools { position: fixed; z-index: 2; right: 12px; bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
+.tools button { width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--panel); color: var(--ink);
+                box-shadow: var(--shadow); font: 600 13px/1 inherit; cursor: pointer; }
+.tools button.on { color: var(--accent); }
+.chips { position: fixed; z-index: 2; top: 64px; left: 12px; right: 12px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips button { flex-shrink: 0; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 18px;
+                padding: 7px 14px; font: inherit; font-size: 14px; box-shadow: var(--shadow); cursor: pointer; }
+.toast { position: fixed; z-index: 3; left: 50%; bottom: 32px; transform: translateX(-50%); background: #323232; color: #fff;
+         padding: 10px 16px; border-radius: 8px; font-size: 14px; display: none; max-width: calc(100% - 120px); }
+.back { position: fixed; z-index: 2; left: 12px; bottom: 32px; background: var(--panel); color: var(--accent); text-decoration: none;
+        padding: 10px 14px; border-radius: 22px; box-shadow: var(--shadow); font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<form class="search" id="form" autocomplete="off">
+  <input id="q" type="search" placeholder="Search a place or address" aria-label="Search">
+  <button type="submit" aria-label="Search">⌕</button>
+</form>
+<div class="chips" id="chips">
+  <button data-q="restaurant">🍴 Restaurants</button>
+  <button data-q="pharmacy">💊 Pharmacies</button>
+  <button data-q="supermarket">🛒 Groceries</button>
+  <button data-q="hospital">🏥 Hospitals</button>
+  <button data-q="post office">📮 Post office</button>
+  <button data-q="bank">🏦 Banks</button>
+  <button data-q="police">🚓 Police</button>
+</div>
+<ul class="results" id="results"></ul>
+
+<div class="tools">
+  <button id="tilt" class="on" title="3D buildings on or off">3D</button>
+  <button id="locate" title="Show where I am">◎</button>
+  <button id="north" title="Point north">N</button>
+</div>
+<a class="back" href="login-globe.html">← Globe</a>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const toast = msg => { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 3500); };
+
+// Start where the globe pointed (street-map.html?lat=..&lon=..), else Philadelphia's center. No home address is ever stored in this page.
+const qs = new URLSearchParams(location.search);
+const startLat = parseFloat(qs.get("lat")), startLon = parseFloat(qs.get("lon"));
+const center = isFinite(startLat) && isFinite(startLon) ? [startLon, startLat] : [-75.1652, 39.9526];
+
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://tiles.openfreemap.org/styles/liberty",
+  center, zoom: 16, pitch: 55, bearing: -17, maxPitch: 75, attributionControl: { compact: true }
+});
+map.addControl(new maplibregl.ScaleControl({ unit: "imperial" }), "bottom-left");
+
+// 3D buildings: the liberty style ships an extruded building layer; make sure it is on and tinted like Google Maps.
+map.on("load", () => {
+  const layer = map.getStyle().layers.find(l => l.type === "fill-extrusion");
+  if (layer) map.setPaintProperty(layer.id, "fill-extrusion-opacity", 0.85);
+});
+
+let is3d = true;
+$("tilt").onclick = () => {
+  is3d = !is3d;
+  $("tilt").classList.toggle("on", is3d);
+  $("tilt").textContent = is3d ? "3D" : "2D";
+  map.easeTo({ pitch: is3d ? 55 : 0, duration: 800 });
+};
+$("north").onclick = () => map.easeTo({ bearing: 0, duration: 600 });
+
+// Your location stays on this device: the browser shares it with this page only, and it is never saved.
+let meMarker;
+$("locate").onclick = () => {
+  if (!navigator.geolocation) return toast("This browser can't share your location.");
+  toast("Finding you…");
+  navigator.geolocation.getCurrentPosition(p => {
+    const ll = [p.coords.longitude, p.coords.latitude];
+    if (!meMarker) {
+      const el = document.createElement("div");
+      el.style.cssText = "width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 6px rgba(26,115,232,.25)";
+      meMarker = new maplibregl.Marker({ element: el });
+    }
+    meMarker.setLngLat(ll).addTo(map);
+    map.flyTo({ center: ll, zoom: 17, pitch: is3d ? 55 : 0, duration: 1500 });
+  }, () => toast("Location is off. Allow it in Settings → Privacy → Location Services for your browser."), { enableHighAccuracy: true, timeout: 10000 });
+};
+
+// Search with OpenStreetMap's free search, limited to what's on screen first so "pizza" finds nearby spots.
+let pins = [];
+function clearPins() { pins.forEach(m => m.remove()); pins = []; }
+async function search(q, nearby) {
+  const b = map.getBounds();
+  const params = new URLSearchParams({ q, format: "jsonv2", limit: "15", addressdetails: "0" });
+  if (nearby) { params.set("viewbox", [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].join(",")); params.set("bounded", "1"); }
+  try {
+    const r = await fetch("https://nominatim.openstreetmap.org/search?" + params);
+    const list = await r.json();
+    if (!list.length) return toast(nearby ? `No ${q} found on screen. Zoom out and try again.` : "Nothing found.");
+    show(list);
+  } catch (e) { toast("Search isn't reachable right now."); }
+}
+function show(list) {
+  clearPins();
+  const ul = $("results");
+  ul.innerHTML = "";
+  const bounds = new maplibregl.LngLatBounds();
+  list.forEach(p => {
+    const ll = [parseFloat(p.lon), parseFloat(p.lat)];
+    bounds.extend(ll);
+    const name = p.name || p.display_name.split(",")[0];
+    const where = p.display_name.split(",").slice(1, 3).join(",").trim();
+    pins.push(new maplibregl.Marker({ color: "#ea4335" }).setLngLat(ll)
+      .setPopup(new maplibregl.Popup({ offset: 24 }).setText(name)).addTo(map));
+    const li = document.createElement("li");
+    li.innerHTML = `${name.replace(/</g, "&lt;")}<small>${where.replace(/</g, "&lt;")}</small>`;
+    li.onclick = () => { ul.style.display = "none"; map.flyTo({ center: ll, zoom: 18, pitch: is3d ? 55 : 0 }); };
+    ul.appendChild(li);
+  });
+  ul.style.display = "block";
+  $("chips").style.display = "none";
+  if (list.length > 1) map.fitBounds(bounds, { padding: 80, maxZoom: 17, pitch: is3d ? 45 : 0 });
+  else map.flyTo({ center: bounds.getCenter(), zoom: 18 });
+}
+$("form").onsubmit = e => { e.preventDefault(); const q = $("q").value.trim(); if (q) search(q, false); };
+$("chips").querySelectorAll("button").forEach(b => b.onclick = () => search(b.dataset.q, true));
+$("q").addEventListener("input", () => { if (!$("q").value) { $("results").style.display = "none"; $("chips").style.display = "flex"; clearPins(); } });
+map.on("click", () => { $("results").style.display = "none"; });
+</script>
+</body>
+</html>
