@@ -172,6 +172,17 @@ async function smoke() {
   check('add-task form creates a "week" task', Object.values((await dump()).tasks).some((t) => t.title === 'Smoke test task' && t.group === 'week'))
   check('input clears after adding', (await page.inputValue('#new-task')) === '')
 
+  // Time slider on the 3D card. The task ticked above has a log entry dated today, so today counts it as
+  // finished that day and yesterday shows it still open. Sliding must not change the cards above.
+  const timeState = () => page.evaluate(() => { const t = (id) => document.getElementById(id).innerText; return { date: t('g3d-date'), sum: t('g3d-sum'), legend: t('g3d-legend'), cards: [t('now-lead'), t('g-tasks'), t('g-money'), t('task-progress'), t('money-sum')].join(' | ') } })
+  const today = await timeState()
+  await page.locator('#g3d-day').fill('-1')
+  await page.waitForTimeout(100)
+  const yesterday = await timeState()
+  check('time slider: moving back a day changes the 3D summary (task ticked today is open yesterday)', today.date === 'Today' && /1 finished that day/.test(today.sum) && yesterday.date !== 'Today' && !/finished/.test(yesterday.sum) && today.sum !== yesterday.sum, JSON.stringify({ today, yesterday }))
+  check('time slider leaves the cards above unchanged', today.cards === yesterday.cards, JSON.stringify({ before: today.cards, after: yesterday.cards }))
+  await page.locator('#g3d-day').fill('0')
+
   await page.setViewportSize(VIEWPORTS.phone)
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.waitForTimeout(100)

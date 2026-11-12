@@ -183,7 +183,7 @@ form.add input[type=text] { flex: 1 1 200px; }
 #g3d-date { font-family: var(--display); font-weight: 600; font-size: 1.02rem; }
 #g3d-sum { color: var(--muted); font-size: .86rem; }
 .g3d-time .row { display: flex; align-items: center; gap: 10px; }
-.g3d-play { flex: none; min-width: 4.8em; color: var(--hue); border-color: var(--hue); }
+.btn.ghost.g3d-play { flex: none; min-width: 4.8em; color: var(--hue); border-color: var(--hue); }
 .g3d-track { flex: 1; min-width: 0; }
 .g3d-track input { --fill: 100%; width: 100%; height: 36px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
 .g3d-track input::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(var(--hue), var(--hue)) 0 0 / var(--fill) 100% no-repeat, var(--line); }
@@ -325,7 +325,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
           </div>
         </div>
       </div>
-      <p class="help">Slide back to see past days. An item shows from 14 days before it's due (undated ones the whole time) and leaves on the day its log says it was done. Items finished without a log entry show as done. Stock warnings are for today only.</p>
+      <p class="help">Slide back up to 30 days. An item shows from 14 days before it's due (undated ones always) and leaves the day its log says it was done. Items finished without a log entry show as done. Stock warnings are today's only.</p>
       <div class="legend" id="g3d-legend" aria-live="polite"></div>
       <nav class="boards" aria-label="Your other 3D boards">
         <span class="k">Your other 3D boards</span>
