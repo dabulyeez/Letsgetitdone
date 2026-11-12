@@ -291,7 +291,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
     <section class="span" data-hue="globe" aria-labelledby="h-3d">
       <h2 id="h-3d"><span class="ttl"><span class="dot"></span>3D view</span> <small>from Philadelphia, PA</small></h2>
-      <p class="help">Each line from Philadelphia is one open item: teal for tasks, orange for money, violet for stocks, red when it's late. Drag sideways to turn the globe.</p>
+      <p class="help">Each line from Philadelphia is one open item: teal for tasks, orange for money, violet for stocks. Red means it's late or a stock is under its stop. Drag sideways to turn the globe.</p>
       <div class="g3d-stage" id="g3d" data-state="loading">
         <svg id="g3d-flat" aria-hidden="true"></svg>
         <div id="g3d-gl" aria-hidden="true"></div>
@@ -528,6 +528,9 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
   // ---- Percy and the 3D view: both read the same state the cards above render, no extra subscriptions. ----
   let boardStatus = "loading";   // "loading" until the db answers, then "live" or "signed-out"
+  // Percy and the legend wait until tasks, money and positions have each answered once, so they never say "all clear" too early.
+  const loaded = new Set();
+  const boardReady = () => ["tasks", "money", "positions"].every((n) => loaded.has(n));
   const isLate = (d) => { const x = daysUntil(d); return x != null && x < 0; };
   const stopHit = (p) => p.lastPrice != null && p.lastPrice !== "" && p.stop != null && p.stop !== "" && !isNaN(+p.lastPrice) && !isNaN(+p.stop) && +p.lastPrice <= +p.stop;
   // Short, number-free name for Percy and the globe tooltips: "DEMOA near stop: $92 vs $90" -> "DEMOA near stop".
@@ -545,28 +548,30 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const say = $("percy-say"), mouth = $("percy-mouth");
     const set = (text, card, mood) => {
       const parts = [text];
-      if (card) { const a = el("a", "", card[0]); a.href = "#" + card[1]; parts.push(" Tap ", a, "."); }
-      say.replaceChildren(...parts);
+      if (card) { const a = el("a", "", card[0]); a.href = "#" + card[1]; parts.push(" See ", a, "."); }
+      // Only rewrite the bubble when the words change, so screen readers don't repeat it on every update.
+      const key = text + "|" + (card ? card[0] : "");
+      if (say.dataset.key !== key) { say.replaceChildren(...parts); say.dataset.key = key; }
       $("percy").dataset.mood = mood;
       mouth.setAttribute("d", mood === "worry" ? "M29.2 41.6q2.8-1.8 5.6 0" : "M28.8 40.6q3.2 2.8 6.4 0");
     };
-    if (boardStatus === "loading") return;
+    if (boardStatus === "loading" || (boardStatus === "live" && !boardReady())) return;
     if (boardStatus === "signed-out") return set("Hi, I'm Percy. Sign in to claude.ai and I'll keep watch.", null, "happy");
     const { tasks, money, stocks } = boardItems();
     if (!state.tasks.length && !state.money.length && !state.positions.length) return set("Hi, I'm Percy. Add a task below and I'll keep watch.", null, "happy");
     const TASKS = ["Tasks", "h-tasks"], MONEY = ["Money", "h-money"], STOCKS = ["Stocks", "h-stocks"];
-    // Most urgent first: a stock under its stop, a late bill, a money alert, a late task.
+    // Most urgent first: a stock under its stop, a money alert needing a decision, a late bill, a late task.
     const needs = [
       ...stocks.filter((s) => s.late).map((s) => [s.title, STOCKS]),
-      ...money.filter((m) => m.late).map((m) => [plain(m.title) + " is late", MONEY]),
-      ...money.filter((m) => m.risk && !m.late).map((m) => [plain(m.title), MONEY]),
+      ...money.filter((m) => m.risk).map((m) => [plain(m.title) + " needs a decision", MONEY]),
+      ...money.filter((m) => m.late && !m.risk).map((m) => [plain(m.title) + " is late", MONEY]),
       ...tasks.filter((t) => t.late).map((t) => ["“" + plain(t.title) + "” is late", TASKS]),
     ];
     if (needs.length === 1) return set(`1 thing needs you: ${needs[0][0]}.`, needs[0][1], "worry");
     if (needs.length) return set(`${needs.length} things need you. First: ${needs[0][0]}.`, needs[0][1], "worry");
     const soon = tasks.filter((t) => t.soon);
     if (soon.length) return set(`Nothing late. Due soon: “${plain(soon[0].title)}”.`, TASKS, "happy");
-    set("All clear today! " + (tasks.length ? `${tasks.length} open this week, none late.` : "Everything's done."), null, "happy");
+    set("All clear today! " + (tasks.length ? `${tasks.length} open, none late.` : "Everything's done."), null, "happy");
   }
 
   const PHL = { lat: 39.9526, lng: -75.1652 };
@@ -608,6 +613,10 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   }
 
   function renderLegend(items) {
+    if (boardStatus !== "live" || !boardReady()) {
+      $("g3d-legend").textContent = boardStatus === "signed-out" ? "Sign in to claude.ai to see your items on the globe." : "Loading your board…";
+      return;
+    }
     const late = [...items.tasks, ...items.money, ...items.stocks].filter((x) => x.late).length;
     const parts = [["tasks", items.tasks.length + (items.tasks.length === 1 ? " task open" : " tasks open")],
       ["money", items.money.length + (items.money.length === 1 ? " money item open" : " money items open")],
@@ -722,6 +731,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     };
     g3d.t0 = performance.now();
     const sway = (ts) => {
+      if (g3d.globe !== gl) return;   // the globe was dropped (fell back to the flat view): stop the loop
       if (g3d.sway && g3d.visible) gl.pointOfView({ ...VIEW, lng: VIEW.lng + 14 * Math.sin((ts - g3d.t0) / 9000) });
       requestAnimationFrame(sway);
     };
@@ -786,7 +796,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     $("conn").textContent = "Live"; boardStatus = "live";
     for (const name of Object.keys(renderers)) {
       db.collection(name).onSnapshot((snap) => {
-        state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() })); loaded.add(name);
         renderers[name](); refreshExtras();
       }, () => { $("conn").textContent = "Lost connection to the board. Reload to reconnect."; });
     }
