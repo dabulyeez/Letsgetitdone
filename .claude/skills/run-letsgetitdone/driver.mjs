@@ -119,6 +119,11 @@ async function smoke() {
   check('unset stop order is flagged', /not set in app/i.test(stocks), stocks)
   check('total gain/loss tile is a dollar amount', /^-?\$[\d,]+\.\d\d$/.test(await txt('#stock-tiles .tile:first-child .v')), await txt('#stock-tiles .tile:first-child .v'))
   check('open risky money item is listed first', (await txt('#money li')).includes('DEMOA near stop'), await txt('#money li'))
+  // sample-seed.json's phone bill is due 2026-10-20 and still open, so it is overdue from then on.
+  const phoneChip = await page.locator('#money li', { hasText: 'Phone bill' }).locator('.chip').allInnerTexts()
+  check('overdue open bill gets a "Late" chip', phoneChip.length === 1 && /^late$/i.test(phoneChip[0]), JSON.stringify(phoneChip))
+  const paidChips = await page.locator('#money li', { hasText: 'Internet' }).locator('.chip').count()
+  check('paid bill gets no due chip', paidChips === 0, `${paidChips} chips`)
   check('market summary renders', (await txt('#market-line')).length > 0)
   check('all agents listed', (await page.locator('#agents li').count()) === Object.keys(seeded.agents).length)
   const doneFold = await page.evaluate(() => { const li = [...document.querySelectorAll('#tasks li.done')]; return { n: li.length, folded: li.filter((x) => x.closest('details') && !x.closest('details').open).length } })

@@ -13,7 +13,7 @@ Nothing to install in the cloud container. It already has Node 22, Playwright 1.
 
 ## Run (agent path)
 
-Smoke check. It runs 22 checks (empty states, stock stop and target chips, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, no clipped columns at 400px, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
+Smoke check. It runs 24 checks (empty states, stock stop and target chips, a "Late" chip on an overdue open bill and none on a paid one, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, no clipped columns at 400px, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
 
 ```bash
 node .claude/skills/run-letsgetitdone/driver.mjs --smoke
@@ -74,7 +74,7 @@ Inside the cloud container it prints `Open this link: https://claude.ai/artifact
 
 ## Test
 
-The repo has no test suite. The smoke check above is the test. It passes 22 of 22 on a clean checkout.
+The repo has no test suite. The smoke check above is the test. It passes 24 of 24 on a clean checkout.
 
 ## Gotchas
 
