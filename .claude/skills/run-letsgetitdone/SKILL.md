@@ -13,7 +13,7 @@ Nothing to install in the cloud container. It already has Node 22, Playwright 1.
 
 ## Run (agent path)
 
-Smoke check. It runs 24 checks (empty states, stock stop and target chips, a "Late" chip on an overdue open bill and none on a paid one, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, no clipped columns at 400px, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
+Smoke check. It runs 27 checks (empty states, stock stop and target chips, a "Late" chip on an overdue open bill and none on a paid one, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, no clipped columns at 400px, the 3D view drawn as a globe or its flat fallback with a legend, Percy's bubble saying something about the board, links to the 4 other 3D boards, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
 
 ```bash
 node .claude/skills/run-letsgetitdone/driver.mjs --smoke
@@ -58,6 +58,22 @@ How the REPL behaves: only double quotes group words (there is no escaping), `fi
 
 Point `--page <path>` at another HTML file to test a different version of the page.
 
+The 3D view (`#g3d`, the last card) loads globe.gl from cdn.jsdelivr.net after the first render. The container cannot reach that CDN, so by default the driver answers with an empty script and the card shows its flat SVG fallback (`#g3d[data-state="flat"]`). To see and screenshot the real 3D globe, install the pinned version from npm (the registry is reachable) and pass `--cdn`:
+
+```bash
+mkdir -p /tmp/cdn && (cd /tmp/cdn && npm install --silent globe.gl@2.27.2)
+node .claude/skills/run-letsgetitdone/driver.mjs --cdn /tmp/cdn --out /tmp/shots <<'EOF'
+seed .claude/skills/run-letsgetitdone/sample-seed.json
+eval document.getElementById('g3d').scrollIntoView({block:'center'})
+eval new Promise(r => setTimeout(r, 3500))
+eval document.getElementById('g3d').dataset.state
+ss globe
+quit
+EOF
+```
+
+`--cdn <dir>` serves `cdn.jsdelivr.net/npm/<pkg>@<ver>/<file>` from `<dir>/node_modules/<pkg>/<file>` only when the installed version matches; anything else still gets the empty script. The globe pauses while its card is off screen, so scroll it into view and wait before `ss`, or the stage is blank in the shot.
+
 How the task list behaves, so you know what to click: open tasks sit under a "Today" (group `now`) and a "This week" (group `week`) label, soonest due first and undated last, then by `order`. Done tasks are folded into `#tasks details.done-list`, closed by default, so a done task's tick is hidden until you `click "#tasks details.done-list summary"`. Ticks are easiest to hit by label, for example `click "#tasks button[aria-label='Mark done: Check Navy Federal activity']"` or `[aria-label='Reopen ...']`. Ticking writes one log doc per item (`log/done-<task id>` or `log/paid-<money id>`) and unticking deletes it, so ticking on, off and on again leaves one entry. The Log shows the newest 6 entries and hides older ones whose text repeats a newer one word for word. Notes in the list are clamped to two lines; clicking the task text (`#tasks .tt`) toggles the full note. The "Right now" card uses the same rule as the list, so it always shows the top open `now` task (or, if every `now` task is done, an overdue `week` task).
 
 To check a change, run the smoke check, then use the REPL to reproduce what you changed, screenshot at both `desktop` and `phone`, and read the screenshots. Donya mostly uses this on a phone.
@@ -74,11 +90,12 @@ Inside the cloud container it prints `Open this link: https://claude.ai/artifact
 
 ## Test
 
-The repo has no test suite. The smoke check above is the test. It passes 24 of 24 on a clean checkout.
+The repo has no test suite. The smoke check above is the test. It passes 27 of 27 on a clean checkout.
 
 ## Gotchas
 
 - **The driver serves the page from `http://monitor.test/` through a route, not with `page.setContent`.** `setContent` does not re-run init scripts, so `window.claude` never gets installed and the board says "Sign in to claude.ai to load your board." Never switch it back.
+- **cdn.jsdelivr.net is stubbed out the same way** (an empty script), so the 3D card shows its flat fallback in the smoke run. That is expected, not a bug; see `--cdn` above to load the real library.
 - **Google Fonts are stubbed out with empty responses.** The container cannot reach them, so screenshots use system fallback fonts instead of Bricolage Grotesque, Atkinson Hyperlegible and JetBrains Mono (numbers and chips use the system monospace). Spacing and wrapping can differ a little from the real page. Nothing is filtered from `errors`, so anything listed there is real.
 - **The smoke check's "no horizontal page scroll" test cannot see clipped content.** Tables sit in `overflow-x: auto` boxes, so a table can lose its Stop and Target columns and the page still reports no overflow. A real bug like that shipped once. The check "Gain, Stop and Target cells are fully visible at 400px" covers columns 5 to 7, so update its `td:nth-child(n+5)` selector if you reorder columns. Add a similar explicit check when you add columns.
 - **The stub is simpler than the real database.** It has no access rules, no `version` or `ifVersion` pinning, no latency and no persistence. It supports only `collection`/`doc` with `get`, `set`, `update`, `delete`, `add` and `onSnapshot`: no `where`, `orderBy`, `limit` or batches, and the `onSnapshot` error callback never fires, so the page's "Lost connection to the board" path cannot be exercised. `use()` returns null for every capability except `db`. It proves rendering and write calls, not what the real artifact database accepts. After a change that adds fields or collections, check one real write with `mcp__claude-artifacts__db_write` on slug `9e94d782-5efb-40b1-ac72-c2a16f01d326`.

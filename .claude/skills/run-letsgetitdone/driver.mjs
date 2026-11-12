@@ -12,7 +12,8 @@
 //   quit
 //   EOF
 //
-// Options: --out <dir> (default /tmp/letsgetitdone-shots), --page <path> (default monitor/daily-monitor.html)
+// Options: --out <dir> (default /tmp/letsgetitdone-shots), --page <path> (default monitor/daily-monitor.html),
+//          --cdn <dir> (serve cdn.jsdelivr.net/npm/<pkg>@<ver>/<file> from <dir>/node_modules/<pkg>/<file>, see SKILL.md)
 import { createRequire } from 'node:module'
 import { execSync } from 'node:child_process'
 import { readFileSync, mkdirSync, existsSync } from 'node:fs'
@@ -26,6 +27,7 @@ const opt = (name, dflt) => { const i = argv.indexOf(name); return i >= 0 ? argv
 const OUT = resolve(opt('--out', '/tmp/letsgetitdone-shots'))
 const PAGE = resolve(opt('--page', 'monitor/daily-monitor.html'))
 const SEED = resolve(here, 'sample-seed.json')
+const CDN = opt('--cdn', null) && resolve(opt('--cdn'))
 mkdirSync(OUT, { recursive: true })
 
 // playwright is installed globally in this container; ESM ignores NODE_PATH, so resolve it by hand.
@@ -83,6 +85,20 @@ page.on('pageerror', (e) => errors.push('pageerror: ' + e.message))
 // Google Fonts are not reachable from the container. Answer with an empty 200 so the fallback stack
 // renders and no console error is produced (an aborted request would log net::ERR_FAILED).
 await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: r.request().url().includes('googleapis') ? 'text/css' : 'font/woff2', body: '' }))
+// cdn.jsdelivr.net (the 3D view's globe library) is not reachable either. By default answer with an empty
+// script: it "loads", defines nothing, and the page shows its flat fallback with no console error.
+// With --cdn <dir>, files from an `npm install` in <dir> are served instead, if the version matches.
+await page.route(/^https:\/\/cdn\.jsdelivr\.net\//, (r) => {
+  const m = /^\/npm\/((?:@[^/]+\/)?[^@/]+)@([^/]+)\/(.+)$/.exec(new URL(r.request().url()).pathname)
+  if (CDN && m) {
+    const dir = `${CDN}/node_modules/${m[1]}`
+    try {
+      if (JSON.parse(readFileSync(`${dir}/package.json`, 'utf8')).version === m[2] && existsSync(`${dir}/${m[3]}`))
+        return r.fulfill({ status: 200, contentType: 'application/javascript', body: readFileSync(`${dir}/${m[3]}`) })
+    } catch {}
+  }
+  r.fulfill({ status: 200, contentType: 'application/javascript', body: '' })
+})
 page.setDefaultTimeout(5000)  // a mistyped selector should fail in 5s, not Playwright's default 30s
 await page.addInitScript(DB_STUB)
 // goto (not setContent) so the init script above runs before the page script.
@@ -165,6 +181,15 @@ async function smoke() {
   check('stock Gain, Stop and Target cells are fully visible at 400px', clipped === 0, `${clipped} cells cut off`)
   await shot('smoke-3-seeded-phone-dark')
 
+  // 3D view: the globe, or its flat fallback (the default, since the CDN is stubbed out), must be drawn.
+  await page.waitForFunction(() => ['globe', 'flat'].includes(document.getElementById('g3d')?.dataset.state), null, { timeout: 25000 }).catch(() => {})
+  const g3d = await page.evaluate(() => { const s = document.getElementById('g3d'); return { state: s.dataset.state, canvas: !!s.querySelector('#g3d-gl canvas'), flat: s.querySelectorAll('#g3d-flat path').length, legend: document.getElementById('g3d-legend').innerText } })
+  check('3D view draws the globe or its flat fallback, with a legend', (g3d.state === 'globe' ? g3d.canvas : g3d.state === 'flat' && g3d.flat > 1) && /tasks open/.test(g3d.legend), JSON.stringify(g3d))
+  const percy = (await txt('#percy-say')).trim()
+  check("Percy's bubble has a line about the board", percy.length > 10 && !/Getting your board/.test(percy), percy)
+  const boards = await page.locator('section[data-hue="globe"] nav.boards a').evaluateAll((as) => as.map((a) => a.href))
+  const wanted = ['https://claude.ai/artifact/1CdhDJmmhiPRjpTmuzWWm6', 'https://claude.ai/artifact/SmU1NdZJoJapivRpNkmVNM', 'https://claude.ai/artifact/VESv9SuV4r6WuLStib56WB', 'https://dabulyeez.github.io/Letsgetitdone/monitor/street-map.html']
+  check('links to the 4 other 3D boards', wanted.every((u) => boards.includes(u)), JSON.stringify(boards))
   check('no console errors', errors.length === 0, errors.join(' | '))
   const failed = results.filter((r) => !r).length
   console.log(`\n${results.length - failed}/${results.length} passed. Screenshots in ${OUT}`)
