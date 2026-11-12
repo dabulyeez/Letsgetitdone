@@ -181,6 +181,13 @@ form.add input[type=text] { flex: 1 1 200px; }
     return short(d);
   };
 
+  // Due chip shared by tasks and money: "Late" once the day has passed, amber for today and tomorrow.
+  const dueChip = (d) => {
+    const dd = daysUntil(d);
+    const c = dd != null && dd < 0 ? el("span", "chip bad", "Late") : el("span", "chip" + (dd != null && dd <= 1 ? " warn" : ""), dueLabel(d));
+    c.title = "Due " + short(d); return c;
+  };
+
   $("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
   const state = { tasks: [], money: [], positions: [], agents: [], log: [], market: null };
@@ -256,11 +263,7 @@ form.add input[type=text] { flex: 1 1 200px; }
     const chips = el("div", "chips");
     if (t.status === "blocked") chips.append(el("span", "chip bad", "blocked"));
     else if (t.status === "doing") chips.append(el("span", "chip warn", "doing"));
-    if (!isDone && t.due) {
-      const dd = daysUntil(t.due);
-      const c = dd != null && dd < 0 ? el("span", "chip bad", "Late") : el("span", "chip" + (dd != null && dd <= 1 ? " warn" : ""), dueLabel(t.due));
-      c.title = "Due " + short(t.due); chips.append(c);
-    }
+    if (!isDone && t.due) chips.append(dueChip(t.due));
     li.append(b, mid, chips); return li;
   }
 
@@ -276,8 +279,11 @@ form.add input[type=text] { flex: 1 1 200px; }
       b.setAttribute("aria-pressed", m.status === "done"); b.setAttribute("aria-label", (m.status === "done" ? "Reopen " : "Mark paid: ") + m.title);
       b.onclick = () => toggleMoney(m);
       const mid = el("div"); mid.append(el("div", "t", m.title));
-      const sub = [m.kind, m.due && "due " + short(m.due), m.note].filter(Boolean).join(" · "); if (sub) mid.append(el("div", "n", sub));
-      li.append(b, mid, el("span", "num", m.amount != null && m.amount !== "" ? money(m.amount) : "")); return li;
+      const sub = [m.kind, m.due && m.status === "done" && "due " + short(m.due), m.note].filter(Boolean).join(" · "); if (sub) mid.append(el("div", "n", sub));
+      const right = el("div", "chips");
+      right.append(el("span", "num", m.amount != null && m.amount !== "" ? money(m.amount) : ""));
+      if (m.status !== "done" && m.due) right.append(dueChip(m.due));
+      li.append(b, mid, right); return li;
     }));
   }
 
