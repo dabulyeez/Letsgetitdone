@@ -166,7 +166,7 @@ form.add input[type=text] { flex: 1 1 200px; }
 @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
 /* 3D view: a night globe in the Login Globe's style, always dark so it reads the same in light and dark mode.
    The marks use the dark-mode card colours, set here on the stage. */
-.g3d-stage { --c-tasks: #3bc9db; --c-money: #ffa94d; --c-stocks: #b197fc; --bad: #ff8a8a; --sky: #6cc6ff;
+.g3d-stage { --c-tasks: #3bc9db; --c-money: #ffa94d; --c-stocks: #b197fc; --bad: #ff8a8a; --good: #69d29a; --sky: #6cc6ff;
   position: relative; height: 300px; border-radius: 12px; overflow: hidden; color-scheme: dark;
   background: #030812 radial-gradient(90% 80% at 50% 45%, #0b1a30 0%, #050c18 60%, #030812 100%) center / cover; }
 @media (min-width: 860px) { .g3d-stage { height: 380px; } }
@@ -177,6 +177,23 @@ form.add input[type=text] { flex: 1 1 200px; }
 .g3d-note:empty { display: none; }
 .g3d-home { position: absolute; right: 10px; top: 10px; background: rgb(3 8 18 / .72); color: #dbeaf7; border: 1px solid rgb(120 180 230 / .35); border-radius: 99px; padding: 4px 12px; font-size: .8rem; }
 .legend .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--sw); }
+/* Time slider: drag back through the last 30 days. Big thumb so it's easy to grab on a phone. */
+.g3d-time { display: grid; gap: 4px; }
+.g3d-time label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+#g3d-date { font-family: var(--display); font-weight: 600; font-size: 1.02rem; }
+#g3d-sum { color: var(--muted); font-size: .86rem; }
+.g3d-time .row { display: flex; align-items: center; gap: 10px; }
+.btn.ghost.g3d-play { flex: none; min-width: 4.8em; color: var(--hue); border-color: var(--hue); }
+.g3d-track { flex: 1; min-width: 0; }
+.g3d-track input { --fill: 100%; width: 100%; height: 36px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+.g3d-track input::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(var(--hue), var(--hue)) 0 0 / var(--fill) 100% no-repeat, var(--line); }
+.g3d-track input::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: var(--panel); border: 3px solid var(--hue); box-shadow: 0 1px 3px rgb(16 24 40 / .25); }
+.g3d-track input::-moz-range-track { height: 6px; border-radius: 99px; background: var(--line); }
+.g3d-track input::-moz-range-progress { height: 6px; border-radius: 99px; background: var(--hue); }
+.g3d-track input::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--panel); border: 3px solid var(--hue); }
+.g3d-ends { display: flex; justify-content: space-between; font-size: .72rem; color: var(--muted); margin-top: -4px; }
+@media (prefers-reduced-motion: no-preference) { .g3d-pulse { transform-box: fill-box; transform-origin: center; animation: g3d-pulse .7s ease-out 2 both; } }
+@keyframes g3d-pulse { from { transform: scale(1); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
 .boards { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .boards .k { flex-basis: 100%; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .boards a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--hue-soft); color: var(--ink); text-decoration: none; font-weight: 700; font-size: .86rem; }
@@ -298,6 +315,17 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
         <p class="g3d-note" id="g3d-note">Loading the 3D globe…</p>
         <button class="g3d-home" id="g3d-home" type="button" hidden>Back to Philadelphia</button>
       </div>
+      <div class="g3d-time">
+        <label for="g3d-day"><span id="g3d-date">Today</span> <span id="g3d-sum"></span></label>
+        <div class="row">
+          <button class="btn ghost g3d-play" id="g3d-play" type="button">Play</button>
+          <div class="g3d-track">
+            <input type="range" id="g3d-day" min="-30" max="0" step="1" value="0" aria-valuetext="Today">
+            <div class="g3d-ends" aria-hidden="true"><span>30 days ago</span><span>Today</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="help">Slide back up to 30 days. An item shows from 14 days before it's due (undated ones always) and leaves the day its log says it was done. Items finished without a log entry show as done. Stock warnings are today's only.</p>
       <div class="legend" id="g3d-legend" aria-live="polite"></div>
       <nav class="boards" aria-label="Your other 3D boards">
         <span class="k">Your other 3D boards</span>
@@ -586,9 +614,9 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     for (let i = 0; i < a.length; i += 2) { x += a[i]; y += a[i + 1]; pts.push([x / 5, y / 5]); }
     pts.push(pts[0]); return pts;
   }) } }));
-  const g3d = { globe: null, sway: !reduceMotion, t0: 0, visible: true, marks: null };
+  const g3d = { globe: null, sway: !reduceMotion, t0: 0, visible: true, marks: null, day: 0, flash: [], playing: 0 };
   const stage = $("g3d");
-  const hues = () => { const cs = getComputedStyle(stage), v = (n) => cs.getPropertyValue(n).trim(); return { tasks: v("--c-tasks"), money: v("--c-money"), stocks: v("--c-stocks"), bad: v("--bad"), home: v("--sky") }; };
+  const hues = () => { const cs = getComputedStyle(stage), v = (n) => cs.getPropertyValue(n).trim(); return { tasks: v("--c-tasks"), money: v("--c-money"), stocks: v("--c-stocks"), bad: v("--bad"), good: v("--good"), home: v("--sky") }; };
   const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
   // Destination point from a start, a compass bearing and a distance, all in degrees.
   function dest(from, brg, dist) {
@@ -597,19 +625,45 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const l2 = l1 + Math.atan2(Math.sin(th) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
     return { lat: p2 / r, lng: ((l2 / r + 540) % 360) - 180 };
   }
-  // One mark per open item, fanned out from Philadelphia: tasks to the north-west, money to the north-east, stocks to the south.
+  // ---- Time: the globe can show any of the last 30 days. Only the globe, legend and slider change; the cards above always show now. ----
+  // We know when an item was finished (its log entry, "log/done-<task id>" or "log/paid-<money id>") but not when it was added,
+  // so an item shows from 14 days before its due date (never later than today) and undated items show the whole time.
+  const RANGE = 30, LEAD = 14;
+  function timeline() {
+    const logDay = new Map(state.log.map((l) => [l.id, daysUntil(l.ts)]));
+    // Finish day: null while open, -Infinity when done but there's no log entry to date it (shows as done throughout).
+    const finished = (x, prefix) => x.status !== "done" ? null : (logDay.get(prefix + x.id) ?? -Infinity);
+    const from = (due) => { const d = daysUntil(due); return d == null ? -Infinity : Math.min(d - LEAD, 0); };
+    return {
+      tasks: state.tasks.filter((t) => t.group === "now" || t.group === "week")
+        .map((t) => ({ id: "t:" + t.id, kind: "tasks", title: t.title, due: daysUntil(t.due), from: from(t.due), done: finished(t, "done-") })),
+      money: state.money.map((m) => ({ id: "m:" + m.id, kind: "money", title: m.title, due: daysUntil(m.due), from: from(m.due), done: finished(m, "paid-") })),
+      // No price history, so stocks show all the time and the "under its stop" warning only on today.
+      stocks: state.positions.map((p) => ({ id: "s:" + p.id, kind: "stocks", title: String(p.ticker || "Stock"), hit: stopHit(p), due: null, from: -Infinity, done: null })),
+    };
+  }
+  const openOn = (x, k) => x.from <= k && (x.done == null || k < x.done);
+  const lateOn = (x, k) => x.kind === "stocks" ? x.hit && k === 0 : x.due != null && x.due < k;
+
+  // One mark per item, fanned out from Philadelphia: tasks to the north-west, money to the north-east, stocks to the south.
+  // Each item keeps one spot for the whole 30 days, so marks don't jump around as you slide.
   const SECTOR = { tasks: -40, money: 45, stocks: 165 };
-  const MAX_MARKS = 12;
-  function layoutMarks() {
-    const items = boardItems(), c = hues(), marks = [];
+  const MAX_MARKS = 12, MAX_SLOTS = 24;
+  function layoutMarks(k) {
+    const tl = timeline(), c = hues(), marks = [], slots = new Map(), items = {};
     for (const kind of ["tasks", "money", "stocks"]) {
-      const list = items[kind].slice().sort((a, b) => b.late - a.late).slice(0, MAX_MARKS), n = list.length, spread = Math.min(18, 80 / Math.max(n, 1));
-      list.forEach((it, i) => {
-        const end = dest(PHL, SECTOR[kind] + (i - (n - 1) / 2) * spread, 14 + (i % 3) * 5);
-        marks.push({ ...it, ...end, color: it.late ? c.bad : c[kind] });
-      });
+      const inRange = tl[kind].filter((x) => x.from <= 0 && (x.done == null || x.done > -RANGE))
+        .sort((a, b) => (a.done != null) - (b.done != null) || (a.from - b.from) || a.id.localeCompare(b.id)).slice(0, MAX_SLOTS);
+      const n = inRange.length, spread = Math.min(18, 80 / Math.max(n, 1));
+      inRange.forEach((x, i) => slots.set(x.id, dest(PHL, SECTOR[kind] + (i - (n - 1) / 2) * spread, 14 + (i % 3) * 5)));
+      items[kind] = tl[kind].filter((x) => openOn(x, k)).map((x) => ({ ...x, late: lateOn(x, k) }));
+      items[kind].filter((x) => slots.has(x.id)).sort((a, b) => b.late - a.late).slice(0, MAX_MARKS)
+        .forEach((x) => marks.push({ ...x, ...slots.get(x.id), color: x.late ? c.bad : c[kind] }));
     }
-    return { marks, items, c };
+    // Finished on day k: the "fly home" moment when you step forward onto that day.
+    const doneToday = [...tl.tasks, ...tl.money].filter((x) => x.done === k);
+    const flash = doneToday.filter((x) => slots.has(x.id)).map((x) => ({ ...x, ...slots.get(x.id), color: c.good }));
+    return { marks, items, c, doneToday, flash };
   }
 
   function renderLegend(items) {
@@ -626,6 +680,21 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       const s = el("span", "item"), sw = el("span", "sw"); sw.style.setProperty("--sw", k === "bad" ? "var(--bad)" : `var(--c-${k})`);
       s.append(sw, text); return s;
     }));
+  }
+
+  const dayLabel = (k) => { if (k === 0) return "Today"; const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + k); return k === -1 ? "Yesterday" : d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); };
+  function renderTime() {
+    const k = g3d.day, slider = $("g3d-day"), { items, doneToday } = g3d.marks;
+    let sum = "";
+    if (boardStatus === "live" && boardReady()) {
+      const open = items.tasks.length + items.money.length, late = [...items.tasks, ...items.money].filter((x) => x.late).length;
+      sum = [open + " open", late && late + " late", doneToday.length && doneToday.length + " finished that day"].filter(Boolean).join(" · ");
+    }
+    $("g3d-date").textContent = dayLabel(k);
+    $("g3d-sum").textContent = sum;
+    if (+slider.value !== k) slider.value = k;
+    slider.setAttribute("aria-valuetext", dayLabel(k) + (sum ? ", " + sum : ""));
+    slider.style.setProperty("--fill", (100 * (k + RANGE) / RANGE) + "%");
   }
 
   // Flat view: the same globe drawn as an SVG. It shows while the 3D library loads, and stays if 3D can't run.
@@ -651,13 +720,14 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       d += "M" + pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L") + "Z";
     }
     kids.push(mk("path", { d, fill: "rgba(108,198,255,0.14)", stroke: "rgba(140,210,255,0.55)", "stroke-width": 0.7, "stroke-linejoin": "round" }));
-    const { marks, c } = g3d.marks || layoutMarks();
+    const { marks, c } = g3d.marks || layoutMarks(g3d.day);
     const [hx, hy] = proj(PHL.lng, PHL.lat);
-    for (const m of marks) {
+    for (const m of [...marks, ...g3d.flash]) {
       const [ex, ey] = proj(m.lng, m.lat), mx = (hx + ex) / 2, my = (hy + ey) / 2, len = Math.hypot(ex - hx, ey - hy);
       kids.push(mk("path", { d: `M${hx.toFixed(1)} ${hy.toFixed(1)}Q${mx.toFixed(1)} ${(my - len * 0.45).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`, fill: "none", stroke: m.color, "stroke-width": 1.4, "stroke-opacity": 0.85, "stroke-linecap": "round" }),
         mk("circle", { cx: ex.toFixed(1), cy: ey.toFixed(1), r: m.late ? 3.6 : 2.8, fill: m.color }));
     }
+    if (g3d.flash.length) kids.push(mk("circle", { class: "g3d-pulse", cx: hx, cy: hy, r: 6, fill: "none", stroke: c.good, "stroke-width": 2 }));
     kids.push(mk("circle", { cx: hx, cy: hy, r: 7, fill: "none", stroke: c.home, "stroke-opacity": 0.6 }), mk("circle", { cx: hx, cy: hy, r: 3.4, fill: "#ffffff" }));
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     svg.replaceChildren(...kids);
@@ -665,18 +735,44 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
   function applyGlobe() {
     const gl = g3d.globe; if (!gl) return;
-    const { marks, c } = g3d.marks;
+    const { marks, c } = g3d.marks, flash = g3d.flash;
     const home = { lat: PHL.lat, lng: PHL.lng, color: "#ffffff", r: 0.5, alt: 0.015, title: "Philadelphia" };
-    gl.arcsData(marks.map((m) => ({ startLat: PHL.lat, startLng: PHL.lng, endLat: m.lat, endLng: m.lng, color: [rgba(m.color, 0.15), m.color] })))
-      .pointsData([home, ...marks.map((m) => ({ ...m, r: m.late ? 0.75 : 0.55, alt: 0.015 }))])
-      .ringsData(reduceMotion ? [] : [{ lat: PHL.lat, lng: PHL.lng, color: c.home, max: 4 }, ...marks.filter((m) => m.late).map((m) => ({ lat: m.lat, lng: m.lng, color: c.bad, max: 2.4 }))]);
+    gl.arcsData([...marks, ...flash].map((m) => ({ startLat: PHL.lat, startLng: PHL.lng, endLat: m.lat, endLng: m.lng, color: [rgba(m.color, 0.15), m.color] })))
+      .pointsData([home, ...marks.map((m) => ({ ...m, r: m.late ? 0.75 : 0.55, alt: 0.015 })), ...flash.map((m) => ({ ...m, r: 0.55, alt: 0.015 }))])
+      .ringsData(reduceMotion ? [] : [{ lat: PHL.lat, lng: PHL.lng, color: c.home, max: 4 }, ...marks.filter((m) => m.late).map((m) => ({ lat: m.lat, lng: m.lng, color: c.bad, max: 2.4 })),
+        ...(flash.length ? [{ lat: PHL.lat, lng: PHL.lng, color: c.good, max: 6, speed: 8, period: 650 }] : [])]);
   }
 
   function render3d() {
-    g3d.marks = layoutMarks();
+    g3d.marks = layoutMarks(g3d.day);
     renderLegend(g3d.marks.items);
+    renderTime();
     if (g3d.globe) applyGlobe(); else drawFlat();
   }
+
+  // Move the globe to day k. Stepping forward onto a day shows what got finished that day flying home (not with reduced motion).
+  let flashTimer = 0;
+  function setDay(k, step) {
+    k = Math.max(-RANGE, Math.min(0, Math.round(k)));
+    const forward = step && k > g3d.day;
+    g3d.day = k; g3d.marks = layoutMarks(k);
+    clearTimeout(flashTimer);
+    g3d.flash = forward && !reduceMotion ? g3d.marks.flash : [];
+    if (g3d.flash.length) flashTimer = setTimeout(() => { g3d.flash = []; g3d.globe ? applyGlobe() : drawFlat(); }, 1400);
+    render3d();
+  }
+  function stopPlay() {
+    if (!g3d.playing) return;
+    clearInterval(g3d.playing); g3d.playing = 0;
+    $("g3d-play").textContent = "Play"; $("g3d-legend").setAttribute("aria-live", "polite");
+  }
+  $("g3d-day").addEventListener("input", (e) => { stopPlay(); setDay(+e.target.value, true); });
+  $("g3d-play").addEventListener("click", () => {
+    if (g3d.playing) return stopPlay();
+    $("g3d-play").textContent = "Pause"; $("g3d-legend").setAttribute("aria-live", "off");
+    if (g3d.day >= 0) setDay(-RANGE, false);
+    g3d.playing = setInterval(() => { setDay(g3d.day + 1, true); if (g3d.day >= 0) stopPlay(); }, 400);
+  });
 
   let extrasQueued = false;
   function refreshExtras() {
@@ -714,7 +810,8 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       .arcDashLength(reduceMotion ? 1 : 0.6).arcDashGap(reduceMotion ? 0 : 0.3).arcDashAnimateTime(reduceMotion ? 0 : 6000)
       .pointColor("color").pointRadius("r").pointAltitude("alt")
       .pointLabel((d) => { const t = el("div"); t.textContent = d.kind ? plain(d.title) + (d.late ? " (late)" : "") : d.title; t.style.cssText = "font:12px system-ui,sans-serif;background:#071220ee;color:#dbeaf7;padding:5px 8px;border:1px solid #6cc6ff44;border-radius:7px"; return t.outerHTML; })
-      .ringColor((d) => (t) => rgba(d.color, 0.8 * (1 - t))).ringMaxRadius("max").ringPropagationSpeed(1).ringRepeatPeriod(2400);
+      .ringColor((d) => (t) => rgba(d.color, 0.8 * (1 - t))).ringMaxRadius("max").ringPropagationSpeed((d) => d.speed || 1).ringRepeatPeriod((d) => d.period || 2400)
+      .arcsTransitionDuration(reduceMotion ? 0 : 500).pointsTransitionDuration(reduceMotion ? 0 : 500);
     gl.globeMaterial().color.set("#04101f");
     gl.globeMaterial().emissive.set("#020a16");
     gl.globeMaterial().shininess = 4;
