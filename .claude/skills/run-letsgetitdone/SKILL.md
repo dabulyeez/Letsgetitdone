@@ -13,7 +13,7 @@ Nothing to install in the cloud container. It already has Node 22, Playwright 1.
 
 ## Run (agent path)
 
-Smoke check. It runs 27 checks (empty states, stock stop and target chips, a "Late" chip on an overdue open bill and none on a paid one, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, no clipped columns at 400px, the 3D view drawn as a globe or its flat fallback with a legend, Percy's bubble saying something about the board, links to the 4 other 3D boards, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
+Smoke check. It runs 29 checks (empty states, stock stop and target chips, a "Late" chip on an overdue open bill and none on a paid one, done tasks folded into a closed "Done (n)" `<details>`, tick / untick / tick again leaving exactly one log entry, adding a task, the 3D card's time slider changing its summary but not the cards above, no clipped columns at 400px, the 3D view drawn as a globe or its flat fallback with a legend, Percy's bubble saying something about the board, links to the 4 other 3D boards, no console errors), saves three screenshots, and exits non-zero if anything fails (1 for a failed check or a startup crash, 2 if the checks themselves crash):
 
 ```bash
 node .claude/skills/run-letsgetitdone/driver.mjs --smoke
@@ -74,6 +74,8 @@ EOF
 
 `--cdn <dir>` serves `cdn.jsdelivr.net/npm/<pkg>@<ver>/<file>` from `<dir>/node_modules/<pkg>/<file>` only when the installed version matches; anything else still gets the empty script. The globe pauses while its card is off screen, so scroll it into view and wait before `ss`, or the stage is blank in the shot.
 
+The 3D card has a time slider (`#g3d-day`, a range input from -30 to 0 days, 0 = today) and a Play button (`#g3d-play`) that steps a day every 0.4 s. Moving it only changes the globe, `#g3d-legend`, `#g3d-date` and `#g3d-sum`, never the cards above. Drive it with `fill #g3d-day -12`. An item counts as finished on the day of its `log/done-<task id>` or `log/paid-<money id>` entry; a done item with no log entry never shows; an item with a due date shows from 14 days before it (never later than today). `sample-seed.json` has fixed October 2026 dates, so in the past most of its items look the same as today; for a richer run, write a scratch seed whose `due` dates and log `ts` values are relative to the current date (do not edit the sample seed, the smoke checks depend on it).
+
 How the task list behaves, so you know what to click: open tasks sit under a "Today" (group `now`) and a "This week" (group `week`) label, soonest due first and undated last, then by `order`. Done tasks are folded into `#tasks details.done-list`, closed by default, so a done task's tick is hidden until you `click "#tasks details.done-list summary"`. Ticks are easiest to hit by label, for example `click "#tasks button[aria-label='Mark done: Check Navy Federal activity']"` or `[aria-label='Reopen ...']`. Ticking writes one log doc per item (`log/done-<task id>` or `log/paid-<money id>`) and unticking deletes it, so ticking on, off and on again leaves one entry. The Log shows the newest 6 entries and hides older ones whose text repeats a newer one word for word. Notes in the list are clamped to two lines; clicking the task text (`#tasks .tt`) toggles the full note. The "Right now" card uses the same rule as the list, so it always shows the top open `now` task (or, if every `now` task is done, an overdue `week` task).
 
 To check a change, run the smoke check, then use the REPL to reproduce what you changed, screenshot at both `desktop` and `phone`, and read the screenshots. Donya mostly uses this on a phone.
@@ -90,7 +92,7 @@ Inside the cloud container it prints `Open this link: https://claude.ai/artifact
 
 ## Test
 
-The repo has no test suite. The smoke check above is the test. It passes 27 of 27 on a clean checkout.
+The repo has no test suite. The smoke check above is the test. It passes 29 of 29 on a clean checkout.
 
 ## Gotchas
 
