@@ -4,6 +4,8 @@ description: Deploy the application to production
 disable-model-invocation: true
 ---
 
+Follow `.claude/AGENT_RULES.md`: get Donya's yes before publishing or merging anything.
+
 Deploy $ARGUMENTS to production:
 
 1. Run the test suite

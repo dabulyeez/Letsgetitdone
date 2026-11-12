@@ -3,6 +3,8 @@ name: show-monitor
 description: Opens Donya's Daily Monitor board and reads out everything on it in one go. Use whenever he says "show monitor", "open monitor", "monitor", or asks to see his board, tasks, bills, progress, or stocks at a glance.
 ---
 
+Board writes follow `.claude/AGENT_RULES.md` (rules 8-11).
+
 # Show monitor
 
 The Daily Monitor is his private claude.ai page that holds everything. One link, for both the page he looks at and the board the agents write to (it holds `tasks`, `money`, `positions`, `market`, `agents`, `log`): https://claude.ai/artifact/LamtUS6ZKmsBJntZ1agBTs

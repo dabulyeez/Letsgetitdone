@@ -3,6 +3,8 @@ name: review
 description: Runs Donya's case reviewer on a letter, dispute, call sheet or email draft and fixes it in place before he sends it. Use when he types /review (optionally with a file or topic, like "/review credit letters" or "/review AT&T"), or says "check this", "is this ready".
 ---
 
+The reviewer follows `.claude/AGENT_RULES.md`; fixes stay in the file and nothing is sent.
+
 # /review
 
 1. Work out which files he means. With no argument, review everything he is about to send: the files named in open "now" tasks on the board, plus `case-notes/dispute-letters/`, `case-notes/cfpb-complaints/*DRAFT*`, and `case-notes/child-support/`. With a topic ("credit", "AT&T", "Navy Federal", "child support"), pick the matching files in `case-notes/`. If a file or folder is missing, say so and carry on without it; never invent its contents.
