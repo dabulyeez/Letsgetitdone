@@ -3,39 +3,73 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
 /* Layout: one column on phones, two-column control board on wide screens; "Right now" always first. */
+/* Plan: calm neutral page; each card has its own colour so you can find it at a glance.
+   Semantic colours (good / warn / bad) are kept separate from the card colours. */
 :root {
-  --bg: #eef1f4; --panel: #ffffff; --ink: #14202b; --muted: #5b6b78; --line: #d5dde4;
-  --accent: #1f5f8b; --accent-ink: #ffffff;
-  --good: #1f7a4d; --warn: #a86400; --bad: #b3261e;
-  --good-bg: #e3f3ea; --warn-bg: #fbf0dc; --bad-bg: #fbe5e3;
+  --bg: #f2f4f8; --panel: #ffffff; --ink: #172033; --muted: #5a6679; --line: #dfe4ec;
+  --accent: #3b5bdb; --accent-ink: #ffffff;
+  --good: #1f7a4d; --warn: #a85b00; --bad: #c0262d;
+  --good-bg: #e2f4ea; --warn-bg: #fdf0d9; --bad-bg: #fde6e6;
+  --c-now: #3b5bdb; --c-now-soft: #edf1ff;
+  --c-tasks: #0c8599; --c-tasks-soft: #e3f6f8;
+  --c-money: #e8590c; --c-money-soft: #fff1e8;
+  --c-stocks: #7048e8; --c-stocks-soft: #f1ecff;
+  --c-market: #1971c2; --c-market-soft: #e7f2fc;
+  --c-agents: #c2255c; --c-agents-soft: #fdebf2;
+  --c-log: #5c677d; --c-log-soft: #eef0f4;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3;
-  --line: #29384a; --accent: #6fb3e3; --accent-ink: #0f161d;
-  --good: #6fd19b; --warn: #f0b155; --bad: #ff8a80;
-  --good-bg: #173326; --warn-bg: #3a2a12; --bad-bg: #3d1c1a; color-scheme: dark; } }
+  --bg: #0e1420; --panel: #171f2e; --ink: #e8edf5; --muted: #9aa6b8; --line: #2a3548;
+  --accent: #91a7ff; --accent-ink: #0e1420;
+  --good: #69d29a; --warn: #f5b454; --bad: #ff8a8a;
+  --good-bg: #16352a; --warn-bg: #3b2c12; --bad-bg: #41191c;
+  --c-now: #91a7ff; --c-now-soft: #1c2647;
+  --c-tasks: #3bc9db; --c-tasks-soft: #10313a;
+  --c-money: #ffa94d; --c-money-soft: #3a2614;
+  --c-stocks: #b197fc; --c-stocks-soft: #271f45;
+  --c-market: #74c0fc; --c-market-soft: #132b42;
+  --c-agents: #f783ac; --c-agents-soft: #3a1726;
+  --c-log: #adb5c7; --c-log-soft: #222b3b; color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3;
-  --line: #29384a; --accent: #6fb3e3; --accent-ink: #0f161d;
-  --good: #6fd19b; --warn: #f0b155; --bad: #ff8a80;
-  --good-bg: #173326; --warn-bg: #3a2a12; --bad-bg: #3d1c1a; color-scheme: dark; }
+  --bg: #0e1420; --panel: #171f2e; --ink: #e8edf5; --muted: #9aa6b8; --line: #2a3548;
+  --accent: #91a7ff; --accent-ink: #0e1420;
+  --good: #69d29a; --warn: #f5b454; --bad: #ff8a8a;
+  --good-bg: #16352a; --warn-bg: #3b2c12; --bad-bg: #41191c;
+  --c-now: #91a7ff; --c-now-soft: #1c2647;
+  --c-tasks: #3bc9db; --c-tasks-soft: #10313a;
+  --c-money: #ffa94d; --c-money-soft: #3a2614;
+  --c-stocks: #b197fc; --c-stocks-soft: #271f45;
+  --c-market: #74c0fc; --c-market-soft: #132b42;
+  --c-agents: #f783ac; --c-agents-soft: #3a1726;
+  --c-log: #adb5c7; --c-log-soft: #222b3b; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
 .wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; }
 header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
-h1 { font-family: var(--display); font-weight: 800; font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 2rem; margin: 0; letter-spacing: -0.015em; }
+h1 .hl { color: var(--accent); }
 .date { color: var(--muted); font-size: .95rem; }
 .status-line { color: var(--muted); font-size: .85rem; }
 .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
 @media (min-width: 860px) { .grid { grid-template-columns: 1.2fr 1fr; } .span { grid-column: 1 / -1; } }
-section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+section { --hue: var(--accent); --hue-soft: var(--bg); background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--hue); border-radius: 14px; padding: 16px 18px 18px; display: grid; gap: 12px; min-width: 0; align-content: start; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
+section[data-hue="now"] { --hue: var(--c-now); --hue-soft: var(--c-now-soft); }
+section[data-hue="tasks"] { --hue: var(--c-tasks); --hue-soft: var(--c-tasks-soft); }
+section[data-hue="money"] { --hue: var(--c-money); --hue-soft: var(--c-money-soft); }
+section[data-hue="stocks"] { --hue: var(--c-stocks); --hue-soft: var(--c-stocks-soft); }
+section[data-hue="market"] { --hue: var(--c-market); --hue-soft: var(--c-market-soft); }
+section[data-hue="agents"] { --hue: var(--c-agents); --hue-soft: var(--c-agents-soft); }
+section[data-hue="log"] { --hue: var(--c-log); --hue-soft: var(--c-log-soft); }
+h2 .dot { width: 10px; height: 10px; border-radius: 3px; background: var(--hue); display: inline-block; margin-right: 8px; flex: none; align-self: center; }
+h2 .ttl { display: inline-flex; align-items: center; }
+.help { margin: -6px 0 0; color: var(--muted); font-size: .86rem; max-width: 62ch; }
 h2 { font-family: var(--display); font-weight: 600; font-size: 1.15rem; margin: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; text-wrap: balance; }
 h2 small { font-family: var(--body); font-weight: 400; font-size: .82rem; color: var(--muted); }
-.now { border-color: var(--accent); border-width: 2px; }
+.now { background: linear-gradient(var(--c-now-soft), var(--panel) 85%); border-color: var(--c-now); border-width: 2px 2px 2px 2px; border-top-width: 6px; }
 .now .lead { font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.25; }
 .empty { color: var(--muted); font-size: .92rem; }
 ul.rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
@@ -74,11 +108,26 @@ details.done-list > ul { margin-top: 6px; }
 .tiles { display: flex; flex-wrap: wrap; gap: 20px; }
 .tile .k { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .tile .v { font-family: var(--mono); font-size: 1.3rem; }
+/* At a glance: one tile per card, in that card's colour. */
+.glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.gl { --hue: var(--accent); --hue-soft: var(--bg); background: var(--hue-soft); border-radius: 12px; padding: 10px 12px; border-left: 5px solid var(--hue); min-width: 0; text-decoration: none; color: inherit; display: grid; gap: 2px; }
+.gl .k { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.gl .v { font-family: var(--display); font-weight: 800; font-size: 1.35rem; line-height: 1.1; color: var(--hue); overflow-wrap: anywhere; }
+.gl .s { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+.gl.tasks { --hue: var(--c-tasks); --hue-soft: var(--c-tasks-soft); }
+.gl.money { --hue: var(--c-money); --hue-soft: var(--c-money-soft); }
+.gl.stocks { --hue: var(--c-stocks); --hue-soft: var(--c-stocks-soft); }
+@media (max-width: 480px) { .glance { grid-template-columns: 1fr 1fr; } .gl.stocks { grid-column: 1 / -1; } }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .8rem; color: var(--muted); }
+.legend span.item { display: inline-flex; align-items: center; gap: 6px; }
 .scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 th { text-align: left; font-weight: 400; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; padding: 4px 8px 6px 0; }
 td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
-@media (max-width: 560px) {
+/* Stocks table turns into small cards whenever its card is narrow (phones, and the two-column desktop grid),
+   so the Stop and Target columns are never cut off. */
+section[data-hue="stocks"] { container-type: inline-size; }
+@container (max-width: 640px) {
   #positions tr.head { display: none; }
   #positions, #positions tbody { display: block; }
   #positions tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; padding: 10px 0; border-top: 1px solid var(--line); }
@@ -87,9 +136,10 @@ td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
   #positions td:first-child { grid-column: 1 / -1; font-size: 1.05rem; }
   #positions td:first-child::before { display: none; }
   #positions td::before { content: attr(data-label); display: block; font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+  #positions .chip { white-space: normal; display: inline-block; max-width: 100%; }
 }
 .bar { height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
-.bar > i { display: block; height: 100%; background: var(--good); }
+.bar > i { display: block; height: 100%; background: var(--c-tasks); border-radius: 99px; }
 form.add { display: flex; flex-wrap: wrap; gap: 8px; }
 form.add input, form.add select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
 form.add input[type=text] { flex: 1 1 200px; }
@@ -104,22 +154,37 @@ form.add input[type=text] { flex: 1 1 200px; }
 <div class="wrap">
   <header>
     <div>
-      <h1>Daily Monitor</h1>
+      <h1>Daily <span class="hl">Monitor</span></h1>
       <div class="date" id="today"></div>
     </div>
     <div class="status-line" id="conn">Connecting to your board…</div>
   </header>
 
-  <section class="now" aria-labelledby="h-now">
-    <h2 id="h-now">Right now <small id="now-count"></small></h2>
+  <div class="glance" aria-label="At a glance">
+    <a class="gl tasks" href="#h-tasks"><span class="k">Tasks open</span><span class="v" id="g-tasks">–</span><span class="s" id="g-tasks-s"></span></a>
+    <a class="gl money" href="#h-money"><span class="k">Money open</span><span class="v" id="g-money">–</span><span class="s" id="g-money-s"></span></a>
+    <a class="gl stocks" href="#h-stocks"><span class="k">Stocks</span><span class="v" id="g-stocks">–</span><span class="s" id="g-stocks-s"></span></a>
+  </div>
+
+  <div class="legend" aria-label="What the coloured labels mean">
+    <span>Labels:</span>
+    <span class="item"><span class="chip bad">Late</span> past its date</span>
+    <span class="item"><span class="chip warn">Today</span> due today or tomorrow</span>
+    <span class="item"><span class="chip warn">Near</span> price close to your stop</span>
+    <span class="item"><span class="chip good">Ran</span> finished fine</span>
+  </div>
+
+  <section class="now" data-hue="now" aria-labelledby="h-now">
+    <h2 id="h-now"><span class="ttl"><span class="dot"></span>Right now</span> <small id="now-count"></small></h2>
     <div id="now-lead" class="lead">Loading your next move…</div>
     <div id="now-note" class="n"></div>
     <div><button class="btn" id="now-done" hidden>Mark done</button></div>
   </section>
 
   <div class="grid">
-    <section aria-labelledby="h-tasks">
-      <h2 id="h-tasks">Today and this week <small id="task-progress"></small></h2>
+    <section data-hue="tasks" aria-labelledby="h-tasks">
+      <h2 id="h-tasks"><span class="ttl"><span class="dot"></span>Today and this week</span> <small id="task-progress"></small></h2>
+      <p class="help">Tick the box when a task is done. Tap a task to read its full note.</p>
       <div class="bar" aria-hidden="true"><i id="task-bar" style="width:0%"></i></div>
       <div id="tasks"></div>
       <form class="add" id="add-task">
@@ -132,31 +197,36 @@ form.add input[type=text] { flex: 1 1 200px; }
       </form>
     </section>
 
-    <section aria-labelledby="h-money">
-      <h2 id="h-money">Money <small id="money-sum"></small></h2>
+    <section data-hue="money" aria-labelledby="h-money">
+      <h2 id="h-money"><span class="ttl"><span class="dot"></span>Money</span> <small id="money-sum"></small></h2>
+      <p class="help">Bills and money alerts. A red stripe means it needs a decision from you. Tick it once it's paid or handled.</p>
       <ul class="rows" id="money"></ul>
     </section>
 
-    <section aria-labelledby="h-stocks">
-      <h2 id="h-stocks">Stocks <small id="stocks-asof"></small></h2>
+    <section data-hue="stocks" aria-labelledby="h-stocks">
+      <h2 id="h-stocks"><span class="ttl"><span class="dot"></span>Stocks</span> <small id="stocks-asof"></small></h2>
+      <p class="help"><b>Stop</b> is the price where you planned to sell to limit a loss. <b>Target</b> is the price you hoped to reach. Gain is how far up or down you are.</p>
       <div class="tiles" id="stock-tiles"></div>
       <div class="scroll"><table id="positions"></table></div>
     </section>
 
-    <section aria-labelledby="h-market">
-      <h2 id="h-market">Markets <small id="market-asof"></small></h2>
+    <section data-hue="market" aria-labelledby="h-market">
+      <h2 id="h-market"><span class="ttl"><span class="dot"></span>Markets</span> <small id="market-asof"></small></h2>
+      <p class="help">How the overall market is doing today, in one line.</p>
       <div id="market-line" class="t"></div>
       <div id="market-know" class="n"></div>
       <div class="scroll"><table id="indexes"></table></div>
     </section>
 
-    <section aria-labelledby="h-agents">
-      <h2 id="h-agents">Agents</h2>
+    <section data-hue="agents" aria-labelledby="h-agents">
+      <h2 id="h-agents"><span class="ttl"><span class="dot"></span>Agents</span></h2>
+      <p class="help">Your helpers, what they last found, and when they last ran.</p>
       <ul class="rows agents" id="agents"></ul>
     </section>
 
-    <section aria-labelledby="h-log">
-      <h2 id="h-log">Log <small>latest first</small></h2>
+    <section data-hue="log" aria-labelledby="h-log">
+      <h2 id="h-log"><span class="ttl"><span class="dot"></span>Log</span> <small>latest first</small></h2>
+      <p class="help">What got done, newest first.</p>
       <ul class="rows log" id="log"></ul>
     </section>
   </div>
@@ -217,6 +287,11 @@ form.add input[type=text] { flex: 1 1 200px; }
       $("now-done").hidden = true;
     }
     $("now-count").textContent = now.filter(open).length ? now.filter(open).length + " open today" : "";
+    const openAll = [...now, ...week].filter(open);
+    const lateN = openAll.filter((t) => daysUntil(t.due) != null && daysUntil(t.due) < 0).length;
+    const soonN = openAll.filter((t) => { const d = daysUntil(t.due); return d != null && d >= 0 && d <= 1; }).length;
+    $("g-tasks").textContent = state.tasks.length ? openAll.length : "–";
+    $("g-tasks-s").textContent = [lateN && lateN + " late", soonN && soonN + " due soon"].filter(Boolean).join(" · ") || (openAll.length ? "nothing late" : "all done");
 
     const all = [...now, ...week];
     const done = all.filter((t) => !open(t)).length;
@@ -271,6 +346,10 @@ form.add input[type=text] { flex: 1 1 200px; }
     const items = [...state.money].sort((a, b) => (a.status === "done") - (b.status === "done") || (b.risk === true) - (a.risk === true) || String(a.due || "9").localeCompare(String(b.due || "9")));
     const openAmt = items.filter((m) => m.status !== "done" && !isNaN(+m.amount)).reduce((s, m) => s + +m.amount, 0);
     $("money-sum").textContent = items.some((m) => m.status !== "done") ? money(openAmt) + " open" : "";
+    const openM = items.filter((m) => m.status !== "done");
+    const lateM = openM.filter((m) => daysUntil(m.due) != null && daysUntil(m.due) < 0).length;
+    $("g-money").textContent = openM.length ? money(openAmt) : "$0";
+    $("g-money-s").textContent = openM.length ? openM.length + " open" + (lateM ? " · " + lateM + " late" : "") : "nothing open";
     const list = $("money");
     if (!items.length) return setEmpty(list, "No bills or alerts on the board yet.");
     list.replaceChildren(...items.map((m) => {
@@ -290,7 +369,7 @@ form.add input[type=text] { flex: 1 1 200px; }
   function renderStocks() {
     const ps = state.positions;
     const tiles = $("stock-tiles"), tbl = $("positions");
-    if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; return; }
+    if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; $("g-stocks").textContent = "–"; $("g-stocks-s").textContent = "no holdings yet"; return; }
     let cost = 0, value = 0, priced = 0;
     const COLS = ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop", "Target"];
     const head = el("tr", "head"); COLS.forEach((h) => head.append(el("th", "", h)));
@@ -317,6 +396,9 @@ form.add input[type=text] { flex: 1 1 200px; }
     const t1 = el("div", "tile"); t1.append(el("div", "k", "Total gain / loss"), el("div", "v " + (total > 0 ? "pos" : total < 0 ? "neg" : ""), priced ? money(total) : "—"));
     const t2 = el("div", "tile"); t2.append(el("div", "k", "Market value"), el("div", "v", priced ? money(value) : "—"));
     tiles.replaceChildren(t1, t2);
+    $("g-stocks").textContent = priced ? money(total) : "–";
+    $("g-stocks").style.color = total < 0 ? "var(--bad)" : total > 0 ? "var(--good)" : "";
+    $("g-stocks-s").textContent = priced ? (total < 0 ? "down overall" : total > 0 ? "up overall" : "even") + " · " + ps.length + " holdings" : ps.length + " holdings, no prices yet";
     const latest = ps.map((p) => p.lastUpdated).filter(Boolean).sort().pop();
     $("stocks-asof").textContent = latest ? "prices " + when(latest) : "";
   }
