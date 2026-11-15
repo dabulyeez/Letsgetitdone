@@ -123,27 +123,37 @@ function trustedList() { return $("trusted").value.split(/\s+/).map(s => s.trim(
 const IPV4 = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
 const IPV6 = /\b(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{0,4}(?::[0-9a-f]{1,4})*\b/gi;
 // Addresses that only exist inside one network, so no map service can place them. Each gets a plain reason instead of a pin.
-function privateKind(ip) {
+function privateInfo(ip) {
   const o = ip.split(".").map(Number);
   if (o.length === 4) {
     if (o[0] === 10 || (o[0] === 172 && o[1] >= 16 && o[1] <= 31) || (o[0] === 192 && o[1] === 168))
-      return "a private address inside a home, office or phone-carrier network. It isn't on the public internet, so it can't be put on a map or traced to a person.";
+      return { label: "private network", reason: "a private address inside a home, office or phone-carrier network. It isn't on the public internet, so it can't be put on a map or traced to a person." };
     if (o[0] === 100 && o[1] >= 64 && o[1] <= 127)
-      return "a phone carrier's shared address (many customers use it at once). It can't be put on a map.";
-    if (o[0] === 127) return "this device talking to itself.";
-    if (o[0] === 169 && o[1] === 254) return "a device that couldn't get an address from its router.";
-    if (o[0] === 0 || o[0] >= 224) return "a reserved address, not a real device.";
-    return "";
+      return { label: "carrier shared", reason: "a phone or internet carrier's shared address (many customers use it at once). It can't be put on a map." };
+    if (o[0] === 127) return { label: "this device", reason: "this device talking to itself." };
+    if (o[0] === 169 && o[1] === 254) return { label: "no router address", reason: "a device that couldn't get an address from its router." };
+    if (o[0] === 0 || o[0] >= 224) return { label: "reserved", reason: "a reserved address, not a real device." };
+    return null;
   }
-  if (/^(fe80|fc|fd)/i.test(ip) || ip === "::1") return "a private address inside a local network. It can't be put on a map.";
-  return "";
+  if (/^(fe[89ab][0-9a-f]|f[cd][0-9a-f]{2}):/i.test(ip) || ip === "::1")
+    return { label: "local network", reason: "a private address inside a local network. It can't be put on a map." };
+  return null;
 }
-function isPrivate(ip) { return privateKind(ip) !== ""; }
+function privateKind(ip) { const p = privateInfo(ip); return p ? p.reason : ""; }
+function isPrivate(ip) { return privateInfo(ip) !== null; }
+// Short local IPv6 forms like fe80::1 don't match IPV6 above, so they get their own pattern here (lookups are unaffected).
+const LOCAL_IPV6 = /\b(?:fe[89ab]|f[cd][0-9a-f])[0-9a-f]:[0-9a-f:]*[0-9a-f]\b/gi;
 function privateIps(text) {
-  const found = [...(text.match(IPV4) || []), ...(text.match(IPV6) || []).filter(s => s.split(":").length > 3)];
+  const found = [...(text.match(IPV4) || []), ...(text.match(IPV6) || []).filter(s => s.split(":").length > 3), ...(text.match(LOCAL_IPV6) || [])];
   return [...new Set(found)].filter(isPrivate);
 }
-const PRIVATE_TIP = "If you saw it on your own Wi-Fi, open 10.0.0.1 (your Xfinity gateway) > Connected Devices to see which device it is, and block or remove any you don't know.";
+// Which admin page to suggest depends on the router: Xfinity gateways use 10.0.0.1, most other brands 192.168.0.1 or 192.168.1.1.
+function privateTip(ips) {
+  const page = ips.some(ip => ip.startsWith("10.")) ? "10.0.0.1 (the usual address for an Xfinity gateway)"
+    : ips.some(ip => ip.startsWith("192.168.")) ? "192.168.0.1 or 192.168.1.1 (the usual router addresses)"
+    : "your router's admin page (10.0.0.1 on an Xfinity gateway)";
+  return `If you saw it on your own Wi-Fi, open ${page} > Connected Devices to see which device it is, and block or remove any you don't know.`;
+}
 function extractIps(text) {
   const found = [...(text.match(IPV4) || []), ...(text.match(IPV6) || []).filter(s => s.split(":").length > 3)];
   return [...new Set(found)].filter(ip => !isPrivate(ip));
@@ -211,14 +221,17 @@ function render() {
 async function check() {
   const ips = extractIps($("paste").value);
   const priv = privateIps($("paste").value);
-  const privNote = priv.map(ip => `${ip} can't be mapped: it's ${privateKind(ip)}`).join(" ");
-  $("status").textContent = ips.length ? `Looking up ${ips.length} IP address(es)...` + (priv.length ? " " + privNote : "")
-    : priv.length ? privNote + " " + PRIVATE_TIP : "No IP addresses found. Make sure the text you copied shows IP numbers.";
+  // One short line however many private addresses there are, so the status never turns into a wall of text.
+  const privNote = !priv.length ? "" : priv.length === 1
+    ? `${priv[0]} can't be mapped: it's ${privateKind(priv[0])}`
+    : `Skipped ${priv.length} addresses that can't be mapped: ` + priv.map(ip => `${ip} (${privateInfo(ip).label})`).join(", ") + ".";
+  $("status").textContent = ips.length ? `Looking up ${ips.length} IP address(es)...` + (privNote ? " " + privNote : "")
+    : priv.length ? privNote + " " + privateTip(priv) : "No IP addresses found. Make sure the text you copied shows IP numbers.";
   results = [];
   for (const ip of ips) {
     try { results.push(await lookup(ip)); } catch { results.push({ ip, error: "no connection" }); }
   }
-  if (ips.length) $("status").textContent = `Checked ${ips.length} IP address(es) on ${new Date().toLocaleString()}.` + (priv.length ? " " + privNote : "");
+  if (ips.length) $("status").textContent = `Checked ${ips.length} IP address(es) on ${new Date().toLocaleString()}.` + (privNote ? " " + privNote : "");
   render();
   try { localStorage.setItem("loginWatch.results", JSON.stringify(results)); } catch {}
 }
