@@ -166,7 +166,7 @@ form.add input[type=text] { flex: 1 1 200px; }
 @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
 /* 3D view: a night globe in the Login Globe's style, always dark so it reads the same in light and dark mode.
    The marks use the dark-mode card colours, set here on the stage. */
-.g3d-stage { --c-tasks: #3bc9db; --c-money: #ffa94d; --c-stocks: #b197fc; --bad: #ff8a8a; --good: #69d29a; --sky: #6cc6ff;
+.g3d-stage { --c-tasks: #3bc9db; --c-money: #ffa94d; --c-stocks: #b197fc; --bad: #ff8a8a; --good: #69d29a; --warn: #f5b454; --sky: #6cc6ff; --c-agents: #f783ac;
   position: relative; height: 300px; border-radius: 12px; overflow: hidden; color-scheme: dark;
   background: #030812 radial-gradient(90% 80% at 50% 45%, #0b1a30 0%, #050c18 60%, #030812 100%) center / cover; }
 @media (min-width: 860px) { .g3d-stage { height: 380px; } }
@@ -177,6 +177,73 @@ form.add input[type=text] { flex: 1 1 200px; }
 .g3d-note:empty { display: none; }
 .g3d-home { position: absolute; right: 10px; top: 10px; background: rgb(3 8 18 / .72); color: #dbeaf7; border: 1px solid rgb(120 180 230 / .35); border-radius: 99px; padding: 4px 12px; font-size: .8rem; }
 .legend .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--sw); }
+/* Live: clock and countdowns above the globe, activity under it, agents and the money pulse below. */
+.g3d-k { margin: 0; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.g3d-live { display: grid; gap: 8px 12px; align-items: center; justify-items: start; }
+@media (min-width: 700px) { .g3d-live { grid-template-columns: auto minmax(0, 1fr); } }
+.g3d-clock { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 10px; border-radius: 99px; background: var(--hue-soft); border: 1px solid var(--line); font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.02rem; white-space: nowrap; }
+.g3d-clock::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 3px var(--good-bg); }
+@media (prefers-reduced-motion: no-preference) { .g3d-clock::before { animation: g3d-live 2s ease-in-out infinite; } }
+@keyframes g3d-live { 50% { opacity: .35; } }
+.g3d-due { list-style: none; margin: 0; padding: 0; width: 100%; min-width: 0; display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 700px) { .g3d-due { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.cd { display: grid; min-width: 0; padding: 5px 10px; border-radius: 10px; border: 1px solid var(--line); border-left: 3px solid var(--hue); background: var(--panel); font-size: .8rem; line-height: 1.3; }
+.cd .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.cd .d { font-family: var(--mono); font-size: .76rem; color: var(--muted); white-space: nowrap; }
+.cd.warn { background: var(--warn-bg); border-color: transparent; border-left-color: var(--warn); } .cd.warn .d { color: var(--warn); }
+.cd.bad { background: var(--bad-bg); border-color: transparent; border-left-color: var(--bad); } .cd.bad .d { color: var(--bad); font-weight: 700; }
+.cd.none { grid-column: 1 / -1; color: var(--muted); border-left-color: var(--line); }
+.g3d-unit { border-radius: 12px; overflow: hidden; background: #071220; box-shadow: 0 6px 24px -12px rgb(3 8 18 / .55); }
+.g3d-unit .g3d-stage { border-radius: 0; }
+.g3d-sats { position: absolute; inset: 0; pointer-events: none; }
+.sat { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; padding: 0; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; pointer-events: auto; will-change: transform; }
+.sat.off { visibility: hidden; }
+.sat i { width: 7px; height: 7px; border-radius: 50%; background: #f9d3e1; opacity: .7; box-shadow: 0 0 0 1.5px var(--c-agents); }
+.sat.working i { box-shadow: 0 0 0 1.5px var(--warn), 0 0 8px var(--warn); }
+.sat.fresh i { width: 8px; height: 8px; background: #fff; opacity: 1; box-shadow: 0 0 0 2px var(--c-agents), 0 0 12px 2px rgb(247 131 172 / .75); }
+@media (prefers-reduced-motion: no-preference) { .sat.fresh i { animation: g3d-live 2.4s ease-in-out infinite; } }
+.sat:focus-visible { outline: 2px solid #dbeaf7; outline-offset: 0; }
+.g3d-cap { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; margin: 0; padding: 6px 10px; border-radius: 10px; background: rgb(3 8 18 / .86); border: 1px solid rgb(247 131 172 / .4); color: #dbeaf7; font-size: .8rem; overflow-wrap: anywhere; }
+.g3d-feedbox { padding: 8px 12px 10px; border-top: 1px solid rgb(120 180 230 / .16); color: #dbeaf7; }
+.g3d-feedbox .g3d-k { color: #8fa6bd; }
+.g3d-feed { list-style: none; margin: 4px 0 0; padding: 0; display: grid; font-size: .82rem; }
+.g3d-feed li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 4px 6px; margin: 0 -6px; border-radius: 6px; border-top: 1px solid rgb(120 180 230 / .1); }
+.g3d-feed li:first-child { border-top: 0; }
+.g3d-feed .tx { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g3d-feed .meta { font-family: var(--mono); font-size: .72rem; color: #8fa6bd; white-space: nowrap; }
+.g3d-feed li.empty { display: block; color: #8fa6bd; }
+@media (max-width: 560px) { .g3d-feed li { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 3px; } }
+.g3d-feed li.fresh { background: rgb(108 198 255 / .16); box-shadow: inset 3px 0 0 #6cc6ff; }
+@media (prefers-reduced-motion: no-preference) {
+  .g3d-feed li.fresh { animation: g3d-feed-in .5s ease-out, g3d-glow 4s ease-out; }
+  .g3d-feed li { transition: background 1s; }
+}
+@keyframes g3d-feed-in { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes g3d-glow { from { background: rgb(108 198 255 / .38); } }
+.g3d-agents { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--panel); font-size: .8rem; }
+.ag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.ag.good::before { background: var(--good); } .ag.warn::before { background: var(--warn); }
+.ag.fresh::before { box-shadow: 0 0 0 3px var(--good-bg); }
+.ag .when { color: var(--muted); font-size: .76rem; }
+.ag.none::before { display: none; }
+.g3d-block { display: grid; gap: 6px; }
+.g3d-mh { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.g3d-mh .tot { font-size: .8rem; color: var(--muted); }
+#g3d-pl { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 500; margin-left: 6px; }
+.g3d-gauges { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px 20px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.gg { --tone: var(--muted); display: grid; gap: 5px; min-width: 0; }
+.gg.good { --tone: var(--good); } .gg.warn { --tone: var(--warn); } .gg.bad { --tone: var(--bad); }
+.gg .gh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.gg .tk { font-weight: 700; }
+.gg .px { color: var(--tone); }
+.gg .up { color: var(--muted); font-size: .76rem; }
+.gauge { position: relative; height: 8px; margin: 4px 7px; border-radius: 99px; background: linear-gradient(90deg, var(--bad-bg), var(--bg) 45%, var(--good-bg)); border: 1px solid var(--line); }
+.gauge .buy { position: absolute; top: -5px; width: 2px; height: 16px; margin-left: -1px; border-radius: 1px; background: var(--muted); }
+.gauge .dot { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--tone); border: 2px solid var(--panel); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 28%, transparent), 0 0 12px var(--tone); }
+@media (prefers-reduced-motion: no-preference) { .gauge .dot, .gauge .buy { transition: left .9s cubic-bezier(.2, .8, .2, 1); } }
+.gg .ends { display: flex; justify-content: space-between; gap: 6px; font-family: var(--mono); font-size: .7rem; color: var(--muted); white-space: nowrap; }
+.g3d-gauges .empty { grid-column: 1 / -1; }
 /* Time slider: drag back through the last 30 days. Big thumb so it's easy to grab on a phone. */
 .g3d-time { display: grid; gap: 4px; }
 .g3d-time label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
@@ -309,11 +376,23 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     <section class="span" data-hue="globe" aria-labelledby="h-3d">
       <h2 id="h-3d"><span class="ttl"><span class="dot"></span>3D view</span> <small>from Philadelphia, PA</small></h2>
       <p class="help">Each line from Philadelphia is one open item: teal for tasks, orange for money, violet for stocks. Red means it's late or a stock is under its stop. Drag sideways to turn the globe.</p>
-      <div class="g3d-stage" id="g3d" data-state="loading">
-        <svg id="g3d-flat" aria-hidden="true"></svg>
-        <div id="g3d-gl" aria-hidden="true"></div>
-        <p class="g3d-note" id="g3d-note">Loading the 3D globe…</p>
-        <button class="g3d-home" id="g3d-home" type="button" hidden>Back to Philadelphia</button>
+      <div class="g3d-live">
+        <time class="g3d-clock" id="g3d-clock" aria-label="Your local time">--:--:--</time>
+        <ul class="g3d-due" id="g3d-due" aria-label="Coming up next"></ul>
+      </div>
+      <div class="g3d-unit">
+        <div class="g3d-stage" id="g3d" data-state="loading">
+          <svg id="g3d-flat" aria-hidden="true"></svg>
+          <div id="g3d-gl" aria-hidden="true"></div>
+          <div class="g3d-sats" id="g3d-sats" aria-label="Your agents"></div>
+          <p class="g3d-note" id="g3d-note">Loading the 3D globe…</p>
+          <button class="g3d-home" id="g3d-home" type="button" hidden>Back to Philadelphia</button>
+          <p class="g3d-cap" id="g3d-cap" hidden></p>
+        </div>
+        <div class="g3d-feedbox">
+          <p class="g3d-k">Live activity</p>
+          <ol class="g3d-feed" id="g3d-feed" aria-label="Latest activity, newest first"></ol>
+        </div>
       </div>
       <div class="g3d-time">
         <label for="g3d-day"><span id="g3d-date">Today</span> <span id="g3d-sum"></span></label>
@@ -327,6 +406,16 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       </div>
       <p class="help">Slide back up to 30 days. An item shows from 14 days before it's due (undated ones always) and leaves the day its log says it was done. Items finished without a log entry show as done. Stock warnings are today's only.</p>
       <div class="legend" id="g3d-legend" aria-live="polite"></div>
+      <div class="g3d-block">
+        <p class="g3d-k">Agents at work</p>
+        <p class="help">The pink dots circling Philadelphia are your agents. A bright one ran in the last 6 hours. Tap one to see what it found.</p>
+        <ul class="g3d-agents" id="g3d-agents"></ul>
+      </div>
+      <div class="g3d-block">
+        <div class="g3d-mh"><p class="g3d-k">Money pulse</p><span class="tot">Total gain / loss <b id="g3d-pl">–</b></span></div>
+        <p class="help">Where each price sits between your stop (left) and target (right); the line is what you paid. Prices come only from your board, where Market Watch writes them.</p>
+        <ul class="g3d-gauges" id="g3d-gauges"></ul>
+      </div>
       <nav class="boards" aria-label="Your other 3D boards">
         <span class="k">Your other 3D boards</span>
         <a href="https://claude.ai/artifact/1CdhDJmmhiPRjpTmuzWWm6" target="_blank" rel="noopener">Login Globe</a>
@@ -614,7 +703,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     for (let i = 0; i < a.length; i += 2) { x += a[i]; y += a[i + 1]; pts.push([x / 5, y / 5]); }
     pts.push(pts[0]); return pts;
   }) } }));
-  const g3d = { globe: null, sway: !reduceMotion, t0: 0, visible: true, marks: null, day: 0, flash: [], playing: 0 };
+  const g3d = { globe: null, sway: !reduceMotion, t0: 0, visible: true, marks: null, day: 0, flash: [], playing: 0, ping: false, onScreen: false, flat: null };
   const stage = $("g3d");
   const hues = () => { const cs = getComputedStyle(stage), v = (n) => cs.getPropertyValue(n).trim(); return { tasks: v("--c-tasks"), money: v("--c-money"), stocks: v("--c-stocks"), bad: v("--bad"), good: v("--good"), home: v("--sky") }; };
   const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
@@ -697,22 +786,230 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     slider.style.setProperty("--fill", (100 * (k + RANGE) / RANGE) + "%");
   }
 
+  // ---- Live: clock, countdowns, activity, agents and the money pulse. Everything comes from the board's own
+  //      snapshots (already subscribed above) plus the viewer's clock; the page can't reach any other site. ----
+  const ago = (ts) => {
+    const t = new Date(ts); if (!ts || isNaN(t)) return "";
+    const s = Math.max(0, (Date.now() - t) / 1000);
+    if (s < 45) return "just now";
+    if (s < 3600) return Math.max(1, Math.floor(s / 60)) + " min ago";
+    if (s < 86400) return Math.floor(s / 3600) + " h ago";
+    const d = -daysUntil(ts);
+    return d <= 1 ? "yesterday" : d < 30 ? d + " days ago" : "on " + short(ts);
+  };
+  const agoEl = (tag, cls, ts, pre = "") => { const e = el(tag, cls, ts ? pre + ago(ts) : ""); if (ts) { e.dataset.ago = ts; e.dataset.pre = pre; } return e; };
+  const boardLive = () => boardStatus === "live" && boardReady();
+
+  // Up to 4 countdowns to the soonest due dates of open tasks and money items; late ones first.
+  function renderDue() {
+    const ul = $("g3d-due");
+    if (!boardLive()) return ul.replaceChildren();
+    const due = [...state.tasks.filter((t) => (t.group === "now" || t.group === "week") && t.status !== "done"), ...state.money.filter((m) => m.status !== "done")]
+      .map((x) => ({ title: x.title, d: daysUntil(x.due) })).filter((x) => x.d != null).sort((a, b) => a.d - b.d).slice(0, 4);
+    if (!due.length) return ul.replaceChildren(el("li", "cd none", "No due dates coming up"));
+    ul.replaceChildren(...due.map(({ title, d }) => {
+      const li = el("li", "cd" + (d < 0 ? " bad" : d <= 1 ? " warn" : ""));
+      li.append(el("span", "nm", plain(title)), el("span", "d", d < 0 ? `Late ${-d} day${d === -1 ? "" : "s"}` : d === 0 ? "Today" : d === 1 ? "Tomorrow" : d + " days"));
+      li.title = title; return li;
+    }));
+  }
+
+  // Activity: the newest 8 log entries (same rule as the Log card). New ones slide in, glow, and pulse Philadelphia.
+  const feedSeen = new Set(); let feedPrimed = false, feedSig = "";
+  const freshUntil = new Map();
+  function renderFeed() {
+    const ol = $("g3d-feed");
+    if (boardStatus === "signed-out") return ol.replaceChildren(el("li", "empty", "Sign in to claude.ai to see your board's activity."));
+    if (!loaded.has("log")) return ol.childElementCount || ol.replaceChildren(el("li", "empty", "Loading activity…"));
+    const all = state.log.slice().sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+    const key = (l) => l.id + "|" + l.ts, seenText = new Set(), items = [];
+    for (const l of all) { if (seenText.has(l.text)) continue; seenText.add(l.text); items.push(l); if (items.length === 8) break; }
+    let fresh = 0;
+    for (const l of all) { if (feedPrimed && !feedSeen.has(key(l))) { freshUntil.set(key(l), Date.now() + 4000); fresh++; } feedSeen.add(key(l)); }
+    feedPrimed = true;
+    const sig = items.map(key).join(",");
+    if (sig === feedSig && !fresh) return;
+    feedSig = sig;
+    if (!items.length) ol.replaceChildren(el("li", "empty", "Nothing yet. What you and your agents finish shows up here."));
+    else ol.replaceChildren(...items.map((l) => {
+      const li = el("li", (freshUntil.get(key(l)) || 0) > Date.now() ? "fresh" : "");
+      li.append(el("span", "tx", l.text || ""));
+      const meta = el("span", "meta", l.who ? l.who + " · " : ""); meta.append(agoEl("time", "", l.ts)); li.append(meta);
+      return li;
+    }));
+    if (fresh) {
+      pingHome();
+      setTimeout(() => ol.querySelectorAll("li.fresh").forEach((li) => li.classList.remove("fresh")), 4000);
+    }
+  }
+  let pingTimer = 0;
+  function pingHome() {
+    g3d.ping = true; clearTimeout(pingTimer);
+    g3d.globe ? applyGlobe() : drawFlat();
+    pingTimer = setTimeout(() => { g3d.ping = false; g3d.globe ? applyGlobe() : drawFlat(); }, 1800);
+  }
+
+  // Agents: chips under the globe, and a small satellite each, circling Philadelphia (still with reduced motion).
+  const FRESH_MS = 6 * 3600e3;
+  const agentFresh = (a) => { const t = new Date(a.lastRun); return !isNaN(t) && Date.now() - t < FRESH_MS; };
+  const agentList = () => state.agents.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const agentCap = (a) => [a.name || "Agent", a.lastRun ? "ran " + ago(a.lastRun) : (a.statusLabel || a.status || "ready"), a.lastResult].filter(Boolean).join(" · ");
+  function renderAgentChips() {
+    const ul = $("g3d-agents"), list = agentList();
+    if (!list.length) return ul.replaceChildren(el("li", "ag none", boardStatus === "signed-out" ? "Sign in to see your agents." : loaded.has("agents") ? "Your agents show up here after their first run." : "Loading…"));
+    ul.replaceChildren(...list.map((a) => {
+      const li = el("li", "ag " + (a.status === "working" ? "warn" : a.status === "ran" ? "good" : "") + (agentFresh(a) ? " fresh" : ""));
+      li.append(el("b", "", a.name || "Agent"), a.lastRun ? agoEl("span", "when", a.lastRun, "ran ") : el("span", "when", a.statusLabel || a.status || "ready"));
+      return li;
+    }));
+  }
+  const sats = { els: new Map(), pinned: null, t0: performance.now() };
+  function showCap(id, pin) {
+    const a = state.agents.find((x) => x.id === id), cap = $("g3d-cap");
+    if (pin) sats.pinned = sats.pinned === id ? null : id;
+    const shown = a && (pin ? sats.pinned === id : true);
+    cap.hidden = !shown; if (shown) cap.textContent = agentCap(a);
+  }
+  function hideCap() { if (sats.pinned && state.agents.some((x) => x.id === sats.pinned)) return showCap(sats.pinned); $("g3d-cap").hidden = true; }
+  function renderSats() {
+    const layer = $("g3d-sats"), list = agentList(), keep = new Set();
+    list.forEach((a, i) => {
+      keep.add(a.id);
+      let b = sats.els.get(a.id);
+      if (!b) {
+        b = el("button"); b.type = "button"; b.append(el("i"));
+        b.addEventListener("mouseenter", () => showCap(a.id)); b.addEventListener("focus", () => showCap(a.id));
+        b.addEventListener("mouseleave", hideCap); b.addEventListener("blur", hideCap);
+        b.addEventListener("click", () => showCap(a.id, true));
+        layer.append(b); sats.els.set(a.id, b);
+      }
+      b.dataset.i = i; b.dataset.n = list.length;
+      b.className = "sat" + (agentFresh(a) ? " fresh" : "") + (a.status === "working" ? " working" : "") + (b.classList.contains("off") ? " off" : "");
+      b.setAttribute("aria-label", agentCap(a));
+    });
+    for (const [id, b] of sats.els) if (!keep.has(id)) { b.remove(); sats.els.delete(id); }
+    if (sats.pinned && !keep.has(sats.pinned)) sats.pinned = null;
+    if (!$("g3d-cap").hidden) hideCap();
+    placeSats(performance.now());
+  }
+  // One slow orbit every 90 seconds, a little above the surface.
+  // The faint orbit rings the satellites travel on (one per distance used).
+  const orbits = () => [...new Set(agentList().map((a, i) => 8 + (i % 2) * 3))].map((dist) => Array.from({ length: 73 }, (_, k) => dest(PHL, k * 5, dist)));
+  const satGeo = (i, n, t) => ({ ...dest(PHL, 360 * i / n + 25 + (reduceMotion ? 0 : (t / 1000) * 4), 8 + (i % 2) * 3), alt: 0.16 });
+  const angDist = (a, b) => { const r = Math.PI / 180; return Math.acos(Math.min(1, Math.sin(a.lat * r) * Math.sin(b.lat * r) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.cos((a.lng - b.lng) * r))) / r; };
+  function placeSats(ts) {
+    const w = stage.clientWidth, h = stage.clientHeight, pov = g3d.globe && g3d.globe.pointOfView();
+    for (const b of sats.els.values()) {
+      const g = satGeo(+b.dataset.i, +b.dataset.n, ts - sats.t0);
+      let p = null;
+      if (g3d.globe) { if (angDist(pov, g) < 72) p = g3d.globe.getScreenCoords(g.lat, g.lng, g.alt); }
+      else if (g3d.flat) { const q = g3d.flat.proj(g.lng, g.lat), [cx, cy] = g3d.flat.c; if (q[2]) p = { x: cx + (q[0] - cx) * (1 + g.alt * 0.5), y: cy + (q[1] - cy) * (1 + g.alt * 0.5) }; }
+      const off = !p || !(p.x > 6 && p.x < w - 6 && p.y > 6 && p.y < h - 6);
+      b.classList.toggle("off", off);
+      if (!off) b.style.transform = `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px)`;
+    }
+  }
+  const liveLoop = (ts) => { if (g3d.onScreen && sats.els.size && (g3d.globe || !reduceMotion)) placeSats(ts); requestAnimationFrame(liveLoop); };
+  if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { g3d.onScreen = e.isIntersecting; }).observe(stage); else g3d.onScreen = true;
+
+  // Money pulse: one gauge per priced position, stop on the left, target on the right, what you paid as a line.
+  const gaugeRows = new Map();
+  const pl = { shown: null, anim: 0 };
+  function setPL(v) {
+    const out = $("g3d-pl");
+    const paint = (x) => { out.textContent = x == null ? "–" : money(x); out.className = x > 0 ? "pos" : x < 0 ? "neg" : ""; };
+    cancelAnimationFrame(pl.anim);
+    if (v == null || pl.shown == null || reduceMotion || Math.abs(v - pl.shown) < 0.005) { pl.shown = v; return paint(v); }
+    const from = pl.shown, t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / 900), e = 1 - (1 - k) ** 3; paint(from + (v - from) * e); if (k < 1) pl.anim = requestAnimationFrame(step); };
+    pl.shown = v; pl.anim = requestAnimationFrame(step);
+  }
+  function renderGauges() {
+    const ul = $("g3d-gauges");
+    const num = (v) => v != null && v !== "" && !isNaN(+v) ? +v : null;
+    const ps = state.positions.filter((p) => num(p.lastPrice) != null).sort((a, b) => String(a.ticker).localeCompare(String(b.ticker)));
+    if (!ps.length) {
+      gaugeRows.clear(); setPL(null);
+      return ul.replaceChildren(el("li", "empty", boardStatus === "signed-out" ? "Sign in to see your stocks." : loaded.has("positions") ? "No prices on the board yet. Market Watch adds them when it runs." : "Loading…"));
+    }
+    ul.querySelector(".empty")?.remove();
+    let cost = 0, value = 0, priced = 0; const keep = new Set();
+    for (const p of ps) {
+      keep.add(p.id);
+      const last = num(p.lastPrice), buy = num(p.buy), stop = num(p.stop), target = num(p.target), sh = +p.shares || 0;
+      if (buy != null) { cost += buy * sh; value += last * sh; priced++; }
+      let r = gaugeRows.get(p.id);
+      if (!r) {
+        r = { li: el("li", "gg"), tk: el("b", "tk"), px: el("span", "num px"), up: el("span", "up"), buy: el("span", "buy"), dot: el("span", "dot"), lo: el("span"), mid: el("span"), hi: el("span") };
+        const gh = el("div", "gh"), gauge = el("div", "gauge"), ends = el("div", "ends");
+        gh.append(r.tk, r.px, r.up); gauge.append(r.buy, r.dot); ends.append(r.lo, r.mid, r.hi); r.li.append(gh, gauge, ends);
+        gaugeRows.set(p.id, r);
+      }
+      const ref = buy ?? last, lo = stop ?? Math.min(ref, last) * 0.9, hi = target ?? Math.max(ref, last) * 1.1;
+      const at = (v) => hi > lo ? Math.max(0, Math.min(100, 100 * (v - lo) / (hi - lo))) : 50;
+      const gap = stop != null ? (last - stop) / last : null;
+      const tone = target != null && last >= target ? "good" : gap == null ? (buy == null || last >= buy ? "good" : "warn") : gap <= 0 ? "bad" : gap < 0.05 ? "warn" : "good";
+      r.li.className = "gg " + tone;
+      r.tk.textContent = p.ticker || "Stock"; r.px.textContent = money(last);
+      const up = agoEl("span", "up", p.lastUpdated, "updated "); r.up.replaceWith(up); r.up = up;
+      r.dot.style.left = at(last) + "%";
+      r.buy.hidden = buy == null; if (buy != null) r.buy.style.left = at(buy) + "%";
+      r.lo.textContent = stop != null ? "Stop " + money(stop) : "No stop"; r.mid.textContent = buy != null ? "Paid " + money(buy) : ""; r.hi.textContent = target != null ? "Target " + money(target) : "No target";
+      r.li.setAttribute("aria-label", [p.ticker, "last " + money(last), stop != null && "stop " + money(stop), target != null && "target " + money(target), buy != null && "paid " + money(buy), p.lastUpdated && "updated " + ago(p.lastUpdated)].filter(Boolean).join(", "));
+    }
+    for (const [id, r] of gaugeRows) if (!keep.has(id)) { r.li.remove(); gaugeRows.delete(id); }
+    const order = ps.map((p) => gaugeRows.get(p.id).li);
+    if (order.some((li, i) => ul.children[i] !== li)) ul.replaceChildren(...order);
+    setPL(priced ? value - cost : null);
+  }
+
+  function renderLive() { renderDue(); renderFeed(); renderAgentChips(); renderSats(); renderGauges(); }
+
+  // The clock ticks every second. At midnight the whole board redraws, so "Today", "Late" and the countdowns move on.
+  let clockDay = new Date().toDateString();
+  function tickClock() {
+    const now = new Date();
+    $("g3d-clock").textContent = now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+    if (now.toDateString() !== clockDay) {
+      clockDay = now.toDateString();
+      $("today").textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+      Object.values(renderers).forEach((f) => f()); renderMarket(); refreshExtras();
+    }
+    setTimeout(tickClock, 1000 - (Date.now() % 1000) + 5);
+  }
+  // Relative times ("2 min ago") and the 6-hour agent glow refresh every 30 seconds; the flat view's night shade moves too.
+  function tickAgo() {
+    document.querySelectorAll("[data-ago]").forEach((e) => { e.textContent = (e.dataset.pre || "") + ago(e.dataset.ago); });
+    renderAgentChips(); renderSats();
+    if (!g3d.globe && stage.dataset.state !== "globe") drawFlat();
+  }
+
+  // Night side for the flat view: where the sun is overhead right now (close enough for a picture).
+  function subsolar(now) {
+    const doy = (now - Date.UTC(now.getUTCFullYear(), 0, 0)) / 864e5, hrs = now.getUTCHours() + now.getUTCMinutes() / 60;
+    return { lat: -23.44 * Math.cos(2 * Math.PI / 365 * (doy + 10)), lng: ((12 - hrs) * 15 + 540) % 360 - 180 };
+  }
+
   // Flat view: the same globe drawn as an SVG. It shows while the 3D library loads, and stays if 3D can't run.
   function drawFlat() {
     const svg = $("g3d-flat"), w = stage.clientWidth || 600, h = stage.clientHeight || 300;
     const R = Math.min(w, h) * 0.4, cx = w / 2, cy = h / 2 + R * 0.12, r = Math.PI / 180;
     const sp0 = Math.sin(VIEW.lat * r), cp0 = Math.cos(VIEW.lat * r);
+    // Unit vector in view space: x right, y up, z toward the viewer.
+    const vec = (lng, lat) => { const l = (lng - VIEW.lng) * r, p = lat * r; return [Math.cos(p) * Math.sin(l), cp0 * Math.sin(p) - sp0 * Math.cos(p) * Math.cos(l), sp0 * Math.sin(p) + cp0 * Math.cos(p) * Math.cos(l)]; };
     const proj = (lng, lat) => {
-      const l = (lng - VIEW.lng) * r, p = lat * r, cosc = sp0 * Math.sin(p) + cp0 * Math.cos(p) * Math.cos(l);
-      let x = Math.cos(p) * Math.sin(l), y = cp0 * Math.sin(p) - sp0 * Math.cos(p) * Math.cos(l);
-      if (cosc < 0) { const k = Math.hypot(x, y) || 1; x /= k; y /= k; }   // behind the globe: pin to the edge
-      return [cx + R * x, cy - R * y, cosc >= 0];
+      let [x, y, z] = vec(lng, lat);
+      if (z < 0) { const k = Math.hypot(x, y) || 1; x /= k; y /= k; }   // behind the globe: pin to the edge
+      return [cx + R * x, cy - R * y, z >= 0];
     };
+    g3d.flat = { proj, c: [cx, cy] };
     const NS = "http://www.w3.org/2000/svg", mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
     const kids = [];
     const defs = mk("defs", {}), glow = mk("radialGradient", { id: "g3d-glow" });
     glow.append(mk("stop", { offset: "0.82", "stop-color": "#6cc6ff", "stop-opacity": "0.28" }), mk("stop", { offset: "1", "stop-color": "#6cc6ff", "stop-opacity": "0" }));
-    defs.append(glow); kids.push(defs, mk("circle", { cx, cy, r: R * 1.18, fill: "url(#g3d-glow)" }), mk("circle", { cx, cy, r: R, fill: "#04101f", stroke: "rgba(108,198,255,0.35)" }));
+    const clip = mk("clipPath", { id: "g3d-disc" }), soft = mk("filter", { id: "g3d-soft", x: "-20%", y: "-20%", width: "140%", height: "140%" });
+    clip.append(mk("circle", { cx, cy, r: R })); soft.append(mk("feGaussianBlur", { stdDeviation: Math.max(3, R / 22) }));
+    defs.append(glow, clip, soft); kids.push(defs, mk("circle", { cx, cy, r: R * 1.18, fill: "url(#g3d-glow)" }), mk("circle", { cx, cy, r: R, fill: "#04101f", stroke: "rgba(108,198,255,0.35)" }));
     let d = "";
     for (const f of landFeatures()) for (const ring of f.geometry.coordinates) {
       const pts = ring.map(([x, y]) => proj(x, y));
@@ -720,6 +1017,20 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       d += "M" + pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L") + "Z";
     }
     kids.push(mk("path", { d, fill: "rgba(108,198,255,0.14)", stroke: "rgba(140,210,255,0.55)", "stroke-width": 0.7, "stroke-linejoin": "round" }));
+    // Night side: the visible half of the day/night line, closed along the dark edge of the disc, softly blurred.
+    const sun = subsolar(new Date()), S = vec(sun.lng, sun.lat), sxy = Math.hypot(S[0], S[1]);
+    let night = "";
+    if (sxy < 1e-3) night = S[2] < 0 ? `M${cx - R} ${cy}a${R} ${R} 0 1 0 ${2 * R} 0a${R} ${R} 0 1 0 ${-2 * R} 0Z` : "";
+    else {
+      const A = [-S[1] / sxy, S[0] / sxy, 0];
+      let B = [S[1] * A[2] - S[2] * A[1], S[2] * A[0] - S[0] * A[2], S[0] * A[1] - S[1] * A[0]]; if (B[2] < 0) B = B.map((v) => -v);
+      const pts = [];
+      for (let i = 0; i <= 32; i++) { const t = Math.PI * i / 32; pts.push([Math.cos(t) * A[0] + Math.sin(t) * B[0], Math.cos(t) * A[1] + Math.sin(t) * B[1]]); }
+      const a0 = Math.atan2(-A[1], -A[0]), dir = Math.sign(((Math.atan2(-S[1], -S[0]) - a0 + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) || 1;
+      for (let i = 1; i < 32; i++) { const t = a0 + dir * Math.PI * i / 32; pts.push([Math.cos(t), Math.sin(t)]); }
+      night = "M" + pts.map(([x, y]) => (cx + R * x).toFixed(1) + " " + (cy - R * y).toFixed(1)).join("L") + "Z";
+    }
+    if (night) { const g = mk("g", { "clip-path": "url(#g3d-disc)" }); g.append(mk("path", { d: night, fill: "rgba(1,4,12,0.55)", filter: "url(#g3d-soft)" })); kids.push(g); }
     const { marks, c } = g3d.marks || layoutMarks(g3d.day);
     const [hx, hy] = proj(PHL.lng, PHL.lat);
     for (const m of [...marks, ...g3d.flash]) {
@@ -728,9 +1039,12 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
         mk("circle", { cx: ex.toFixed(1), cy: ey.toFixed(1), r: m.late ? 3.6 : 2.8, fill: m.color }));
     }
     if (g3d.flash.length) kids.push(mk("circle", { class: "g3d-pulse", cx: hx, cy: hy, r: 6, fill: "none", stroke: c.good, "stroke-width": 2 }));
+    for (const ring of orbits()) kids.push(mk("path", { d: "M" + ring.map((q) => { const [x, y] = proj(q.lng, q.lat), [ox, oy] = [cx + (x - cx) * 1.08, cy + (y - cy) * 1.08]; return ox.toFixed(1) + " " + oy.toFixed(1); }).join("L") + "Z", fill: "none", stroke: "rgba(247,131,172,0.28)", "stroke-width": 1, "stroke-dasharray": "2 4" }));
+    if (g3d.ping) kids.push(mk("circle", { class: "g3d-pulse", cx: hx, cy: hy, r: 6, fill: "none", stroke: "#bfe6ff", "stroke-width": 2 }));
     kids.push(mk("circle", { cx: hx, cy: hy, r: 7, fill: "none", stroke: c.home, "stroke-opacity": 0.6 }), mk("circle", { cx: hx, cy: hy, r: 3.4, fill: "#ffffff" }));
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     svg.replaceChildren(...kids);
+    placeSats(performance.now());
   }
 
   function applyGlobe() {
@@ -740,7 +1054,9 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     gl.arcsData([...marks, ...flash].map((m) => ({ startLat: PHL.lat, startLng: PHL.lng, endLat: m.lat, endLng: m.lng, color: [rgba(m.color, 0.15), m.color] })))
       .pointsData([home, ...marks.map((m) => ({ ...m, r: m.late ? 0.75 : 0.55, alt: 0.015 })), ...flash.map((m) => ({ ...m, r: 0.55, alt: 0.015 }))])
       .ringsData(reduceMotion ? [] : [{ lat: PHL.lat, lng: PHL.lng, color: c.home, max: 4 }, ...marks.filter((m) => m.late).map((m) => ({ lat: m.lat, lng: m.lng, color: c.bad, max: 2.4 })),
-        ...(flash.length ? [{ lat: PHL.lat, lng: PHL.lng, color: c.good, max: 6, speed: 8, period: 650 }] : [])]);
+        ...(flash.length ? [{ lat: PHL.lat, lng: PHL.lng, color: c.good, max: 6, speed: 8, period: 650 }] : []),
+        ...(g3d.ping ? [{ lat: PHL.lat, lng: PHL.lng, color: "#bfe6ff", max: 7, speed: 9, period: 600 }] : [])]);
+    gl.pathsData(orbits().map((pts) => ({ pts: pts.map((q) => [q.lat, q.lng, 0.16]) })));
   }
 
   function render3d() {
@@ -777,7 +1093,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   let extrasQueued = false;
   function refreshExtras() {
     if (extrasQueued) return; extrasQueued = true;
-    setTimeout(() => { extrasQueued = false; renderPercy(); render3d(); }, 0);
+    setTimeout(() => { extrasQueued = false; renderPercy(); render3d(); renderLive(); }, 0);
   }
 
   // Starfield painted once with a fixed seed, so it looks the same on every visit.
@@ -803,7 +1119,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     const host = $("g3d-gl");
     const gl = window.Globe({ rendererConfig: { antialias: true, alpha: true, powerPreference: "low-power" }, animateIn: !reduceMotion })(host)
       .backgroundColor("rgba(0,0,0,0)").width(stage.clientWidth).height(stage.clientHeight)
-      .showAtmosphere(true).atmosphereColor("#6cc6ff").atmosphereAltitude(0.18)
+      .showAtmosphere(true).atmosphereColor("#6cc6ff").atmosphereAltitude(0.22)
       .polygonsData(landFeatures()).polygonAltitude(0.006)
       .polygonCapColor(() => "rgba(108,198,255,0.16)").polygonSideColor(() => "rgba(108,198,255,0.05)").polygonStrokeColor(() => "rgba(140,210,255,0.6)").polygonLabel(() => "")
       .arcColor("color").arcStroke(0.7).arcAltitudeAutoScale(0.4).arcCurveResolution(48)
@@ -811,7 +1127,8 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
       .pointColor("color").pointRadius("r").pointAltitude("alt")
       .pointLabel((d) => { const t = el("div"); t.textContent = d.kind ? plain(d.title) + (d.late ? " (late)" : "") : d.title; t.style.cssText = "font:12px system-ui,sans-serif;background:#071220ee;color:#dbeaf7;padding:5px 8px;border:1px solid #6cc6ff44;border-radius:7px"; return t.outerHTML; })
       .ringColor((d) => (t) => rgba(d.color, 0.8 * (1 - t))).ringMaxRadius("max").ringPropagationSpeed((d) => d.speed || 1).ringRepeatPeriod((d) => d.period || 2400)
-      .arcsTransitionDuration(reduceMotion ? 0 : 500).pointsTransitionDuration(reduceMotion ? 0 : 500);
+      .pathPoints("pts").pathPointAlt((p) => p[2]).pathColor(() => "rgba(247,131,172,0.3)").pathStroke(0.4).pathDashLength(0.02).pathDashGap(0.02).pathTransitionDuration(0)
+      .arcsTransitionDuration(reduceMotion ? 0 : 800).pointsTransitionDuration(reduceMotion ? 0 : 800);
     gl.globeMaterial().color.set("#04101f");
     gl.globeMaterial().emissive.set("#020a16");
     gl.globeMaterial().shininess = 4;
@@ -856,6 +1173,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   const renderers = { tasks: renderTasks, money: renderMoney, positions: renderStocks, agents: renderAgents, log: renderLog };
   Object.values(renderers).forEach((f) => f()); renderMarket();
   refreshExtras();
+  tickClock(); setInterval(tickAgo, 30000); requestAnimationFrame(liveLoop);
   // The 3D library loads only after the board has drawn once.
   setTimeout(load3d, 300);
 

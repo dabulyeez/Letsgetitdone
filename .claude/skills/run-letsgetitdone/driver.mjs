@@ -144,6 +144,13 @@ async function smoke() {
   check('all agents listed', (await page.locator('#agents li').count()) === Object.keys(seeded.agents).length)
   const doneFold = await page.evaluate(() => { const li = [...document.querySelectorAll('#tasks li.done')]; return { n: li.length, folded: li.filter((x) => x.closest('details') && !x.closest('details').open).length } })
   check('done tasks sit inside a closed <details>', doneFold.n > 0 && doneFold.folded === doneFold.n, JSON.stringify(doneFold))
+  // 3D card, live parts: countdown chips to due dates, a ticking h:mm:ss clock, and a money gauge per priced position.
+  const live = await page.evaluate(() => ({ due: [...document.querySelectorAll('#g3d-due .cd:not(.none)')].map((e) => e.innerText), clock: document.getElementById('g3d-clock').innerText }))
+  check('3D card shows 1-4 countdown chips and a live h:mm:ss clock', live.due.length >= 1 && live.due.length <= 4 && /^\d{1,2}:\d{2}:\d{2}/.test(live.clock), JSON.stringify(live))
+  const priced = Object.values(seeded.positions).filter((p) => p.lastPrice != null).length
+  await page.waitForFunction(() => document.getElementById('g3d-pl').innerText === document.querySelector('#stock-tiles .tile .v').innerText, null, { timeout: 3000 }).catch(() => {})
+  const gauges = await page.evaluate(() => ({ n: document.querySelectorAll('#g3d-gauges .gg .gauge .dot').length, pl: document.getElementById('g3d-pl').innerText, tile: document.querySelector('#stock-tiles .tile .v').innerText }))
+  check('money pulse has a gauge per priced position and the same total as the Stocks card', gauges.n === priced && gauges.pl === gauges.tile, JSON.stringify({ priced, ...gauges }))
   await shot('smoke-2-seeded-desktop')
 
   // Tick, untick, tick again: the page keeps one log doc per task, so there must never be two "Done:" entries.
@@ -155,6 +162,9 @@ async function smoke() {
   check('ticking a task writes status "done"', Object.values(after.tasks).some((t) => t.title === firstNow.title && t.status === 'done'))
   let n = await doneLogs()
   check('ticking a task creates exactly one log entry for it', n === 1, `${n} entries`)
+  // The new log doc arrives through the live snapshot: it tops the activity feed, glowing, with a relative time.
+  const feed = await page.evaluate(() => [...document.querySelectorAll('#g3d-feed li')].map((li) => ({ text: li.querySelector('.tx')?.innerText, when: li.querySelector('time')?.innerText, fresh: li.classList.contains('fresh') })))
+  check('activity feed shows the new log entry first, glowing, with relative times', feed.length >= 2 && feed[0].text === 'Done: ' + firstNow.title && feed[0].fresh && feed[0].when === 'just now' && feed.every((f) => /just now|min ago|h ago|yesterday|days ago|^on /.test(f.when || '')), JSON.stringify(feed))
   await page.click('#tasks details.done-list summary')
   await tickFor('Reopen ' + firstNow.title).click()
   await page.waitForTimeout(100)
