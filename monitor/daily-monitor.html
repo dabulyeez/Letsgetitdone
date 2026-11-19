@@ -3,39 +3,80 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
 /* Layout: one column on phones, two-column control board on wide screens; "Right now" always first. */
+/* Plan: calm neutral page; each card has its own colour so you can find it at a glance.
+   Semantic colours (good / warn / bad) are kept separate from the card colours. */
 :root {
-  --bg: #eef1f4; --panel: #ffffff; --ink: #14202b; --muted: #5b6b78; --line: #d5dde4;
-  --accent: #1f5f8b; --accent-ink: #ffffff;
-  --good: #1f7a4d; --warn: #a86400; --bad: #b3261e;
-  --good-bg: #e3f3ea; --warn-bg: #fbf0dc; --bad-bg: #fbe5e3;
+  --bg: #f2f4f8; --panel: #ffffff; --ink: #172033; --muted: #5a6679; --line: #dfe4ec;
+  --accent: #3b5bdb; --accent-ink: #ffffff;
+  --good: #1f7a4d; --warn: #a85b00; --bad: #c0262d;
+  --good-bg: #e2f4ea; --warn-bg: #fdf0d9; --bad-bg: #fde6e6;
+  --c-now: #3b5bdb; --c-now-soft: #edf1ff;
+  --c-tasks: #0c8599; --c-tasks-soft: #e3f6f8;
+  --c-money: #e8590c; --c-money-soft: #fff1e8;
+  --c-stocks: #7048e8; --c-stocks-soft: #f1ecff;
+  --c-market: #1971c2; --c-market-soft: #e7f2fc;
+  --c-agents: #c2255c; --c-agents-soft: #fdebf2;
+  --c-log: #5c677d; --c-log-soft: #eef0f4;
+  --c-globe: #9c36b5; --c-globe-soft: #f8f0fc;
+  --percy-fur: #f4a95a; --percy-line: #c46f2a; --percy-belly: #fff3e3; --percy-ear: #f7a8a0; --percy-eye: #1b2232;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3;
-  --line: #29384a; --accent: #6fb3e3; --accent-ink: #0f161d;
-  --good: #6fd19b; --warn: #f0b155; --bad: #ff8a80;
-  --good-bg: #173326; --warn-bg: #3a2a12; --bad-bg: #3d1c1a; color-scheme: dark; } }
+  --bg: #0e1420; --panel: #171f2e; --ink: #e8edf5; --muted: #9aa6b8; --line: #2a3548;
+  --accent: #91a7ff; --accent-ink: #0e1420;
+  --good: #69d29a; --warn: #f5b454; --bad: #ff8a8a;
+  --good-bg: #16352a; --warn-bg: #3b2c12; --bad-bg: #41191c;
+  --c-now: #91a7ff; --c-now-soft: #1c2647;
+  --c-tasks: #3bc9db; --c-tasks-soft: #10313a;
+  --c-money: #ffa94d; --c-money-soft: #3a2614;
+  --c-stocks: #b197fc; --c-stocks-soft: #271f45;
+  --c-market: #74c0fc; --c-market-soft: #132b42;
+  --c-agents: #f783ac; --c-agents-soft: #3a1726;
+  --c-log: #adb5c7; --c-log-soft: #222b3b;
+  --c-globe: #e599f7; --c-globe-soft: #33193c;
+  --percy-fur: #f2a865; --percy-line: #c27434; --percy-belly: #ffecd6; --percy-ear: #f59f98; color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #0f161d; --panel: #17212b; --ink: #e6edf3; --muted: #93a4b3;
-  --line: #29384a; --accent: #6fb3e3; --accent-ink: #0f161d;
-  --good: #6fd19b; --warn: #f0b155; --bad: #ff8a80;
-  --good-bg: #173326; --warn-bg: #3a2a12; --bad-bg: #3d1c1a; color-scheme: dark; }
+  --bg: #0e1420; --panel: #171f2e; --ink: #e8edf5; --muted: #9aa6b8; --line: #2a3548;
+  --accent: #91a7ff; --accent-ink: #0e1420;
+  --good: #69d29a; --warn: #f5b454; --bad: #ff8a8a;
+  --good-bg: #16352a; --warn-bg: #3b2c12; --bad-bg: #41191c;
+  --c-now: #91a7ff; --c-now-soft: #1c2647;
+  --c-tasks: #3bc9db; --c-tasks-soft: #10313a;
+  --c-money: #ffa94d; --c-money-soft: #3a2614;
+  --c-stocks: #b197fc; --c-stocks-soft: #271f45;
+  --c-market: #74c0fc; --c-market-soft: #132b42;
+  --c-agents: #f783ac; --c-agents-soft: #3a1726;
+  --c-log: #adb5c7; --c-log-soft: #222b3b;
+  --c-globe: #e599f7; --c-globe-soft: #33193c;
+  --percy-fur: #f2a865; --percy-line: #c27434; --percy-belly: #ffecd6; --percy-ear: #f59f98; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
 .wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; }
 header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
-h1 { font-family: var(--display); font-weight: 800; font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 2rem; margin: 0; letter-spacing: -0.015em; }
+h1 .hl { color: var(--accent); }
 .date { color: var(--muted); font-size: .95rem; }
 .status-line { color: var(--muted); font-size: .85rem; }
 .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
 @media (min-width: 860px) { .grid { grid-template-columns: 1.2fr 1fr; } .span { grid-column: 1 / -1; } }
-section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+section { --hue: var(--accent); --hue-soft: var(--bg); background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--hue); border-radius: 14px; padding: 16px 18px 18px; display: grid; gap: 12px; min-width: 0; align-content: start; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
+section[data-hue="now"] { --hue: var(--c-now); --hue-soft: var(--c-now-soft); }
+section[data-hue="tasks"] { --hue: var(--c-tasks); --hue-soft: var(--c-tasks-soft); }
+section[data-hue="money"] { --hue: var(--c-money); --hue-soft: var(--c-money-soft); }
+section[data-hue="stocks"] { --hue: var(--c-stocks); --hue-soft: var(--c-stocks-soft); }
+section[data-hue="market"] { --hue: var(--c-market); --hue-soft: var(--c-market-soft); }
+section[data-hue="agents"] { --hue: var(--c-agents); --hue-soft: var(--c-agents-soft); }
+section[data-hue="log"] { --hue: var(--c-log); --hue-soft: var(--c-log-soft); }
+section[data-hue="globe"] { --hue: var(--c-globe); --hue-soft: var(--c-globe-soft); }
+h2 .dot { width: 10px; height: 10px; border-radius: 3px; background: var(--hue); display: inline-block; margin-right: 8px; flex: none; align-self: center; }
+h2 .ttl { display: inline-flex; align-items: center; }
+.help { margin: -6px 0 0; color: var(--muted); font-size: .86rem; max-width: 62ch; }
 h2 { font-family: var(--display); font-weight: 600; font-size: 1.15rem; margin: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; text-wrap: balance; }
 h2 small { font-family: var(--body); font-weight: 400; font-size: .82rem; color: var(--muted); }
-.now { border-color: var(--accent); border-width: 2px; }
+.now { background: linear-gradient(var(--c-now-soft), var(--panel) 85%); border-color: var(--c-now); border-width: 2px 2px 2px 2px; border-top-width: 6px; }
 .now .lead { font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.25; }
 .empty { color: var(--muted); font-size: .92rem; }
 ul.rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
@@ -74,11 +115,26 @@ details.done-list > ul { margin-top: 6px; }
 .tiles { display: flex; flex-wrap: wrap; gap: 20px; }
 .tile .k { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .tile .v { font-family: var(--mono); font-size: 1.3rem; }
+/* At a glance: one tile per card, in that card's colour. */
+.glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.gl { --hue: var(--accent); --hue-soft: var(--bg); background: var(--hue-soft); border-radius: 12px; padding: 10px 12px; border-left: 5px solid var(--hue); min-width: 0; text-decoration: none; color: inherit; display: grid; gap: 2px; }
+.gl .k { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.gl .v { font-family: var(--display); font-weight: 800; font-size: 1.35rem; line-height: 1.1; color: var(--hue); overflow-wrap: anywhere; }
+.gl .s { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+.gl.tasks { --hue: var(--c-tasks); --hue-soft: var(--c-tasks-soft); }
+.gl.money { --hue: var(--c-money); --hue-soft: var(--c-money-soft); }
+.gl.stocks { --hue: var(--c-stocks); --hue-soft: var(--c-stocks-soft); }
+@media (max-width: 480px) { .glance { grid-template-columns: 1fr 1fr; } .gl.stocks { grid-column: 1 / -1; } }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .8rem; color: var(--muted); }
+.legend span.item { display: inline-flex; align-items: center; gap: 6px; }
 .scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 th { text-align: left; font-weight: 400; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; padding: 4px 8px 6px 0; }
 td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
-@media (max-width: 560px) {
+/* Stocks table turns into small cards whenever its card is narrow (phones, and the two-column desktop grid),
+   so the Stop and Target columns are never cut off. */
+section[data-hue="stocks"] { container-type: inline-size; }
+@container (max-width: 640px) {
   #positions tr.head { display: none; }
   #positions, #positions tbody { display: block; }
   #positions tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; padding: 10px 0; border-top: 1px solid var(--line); }
@@ -87,9 +143,10 @@ td { padding: 7px 8px 7px 0; border-top: 1px solid var(--line); }
   #positions td:first-child { grid-column: 1 / -1; font-size: 1.05rem; }
   #positions td:first-child::before { display: none; }
   #positions td::before { content: attr(data-label); display: block; font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+  #positions .chip { white-space: normal; display: inline-block; max-width: 100%; }
 }
 .bar { height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
-.bar > i { display: block; height: 100%; background: var(--good); }
+.bar > i { display: block; height: 100%; background: var(--c-tasks); border-radius: 99px; }
 form.add { display: flex; flex-wrap: wrap; gap: 8px; }
 form.add input, form.add select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
 form.add input[type=text] { flex: 1 1 200px; }
@@ -98,28 +155,179 @@ form.add input[type=text] { flex: 1 1 200px; }
 .log .who { font-size: .8rem; color: var(--muted); }
 .log .who.num { min-width: 6ch; }
 .agents li { grid-template-columns: 1fr auto !important; }
+/* Percy: the board's mascot, with one plain line about the day. */
+.percy { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.percy svg { width: 58px; height: 58px; flex: none; overflow: visible; }
+.percy .bubble { position: relative; margin: 0 0 0 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 12px; font-size: .95rem; min-width: 0; overflow-wrap: anywhere; box-shadow: 0 1px 2px rgb(16 24 40 / .05); }
+.percy .bubble::before { content: ""; position: absolute; left: -6px; top: 50%; width: 10px; height: 10px; background: var(--panel); border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: translateY(-50%) rotate(45deg); }
+.percy .bubble a { color: var(--accent); font-weight: 700; }
+.percy .eyes { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) { .percy .eyes { animation: blink 6s infinite; } }
+@keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+/* 3D view: a night globe in the Login Globe's style, always dark so it reads the same in light and dark mode.
+   The marks use the dark-mode card colours, set here on the stage. */
+.g3d-stage { --c-tasks: #3bc9db; --c-money: #ffa94d; --c-stocks: #b197fc; --bad: #ff8a8a; --good: #69d29a; --warn: #f5b454; --sky: #6cc6ff; --c-agents: #f783ac;
+  position: relative; height: 300px; border-radius: 12px; overflow: hidden; color-scheme: dark;
+  background: #030812 radial-gradient(90% 80% at 50% 45%, #0b1a30 0%, #050c18 60%, #030812 100%) center / cover; }
+@media (min-width: 860px) { .g3d-stage { height: 380px; } }
+.g3d-stage > svg, #g3d-gl { position: absolute; inset: 0; width: 100%; height: 100%; }
+.g3d-stage[data-state="globe"] > svg { display: none; }
+#g3d-gl canvas, #g3d-gl * { touch-action: pan-y !important; }
+.g3d-note { position: absolute; left: 10px; bottom: 10px; margin: 0; max-width: calc(100% - 20px); padding: 4px 10px; border-radius: 99px; background: rgb(3 8 18 / .72); color: #b9c8da; font-size: .78rem; }
+.g3d-note:empty { display: none; }
+.g3d-home { position: absolute; right: 10px; top: 10px; background: rgb(3 8 18 / .72); color: #dbeaf7; border: 1px solid rgb(120 180 230 / .35); border-radius: 99px; padding: 4px 12px; font-size: .8rem; }
+.legend .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--sw); }
+/* Live: clock and countdowns above the globe, activity under it, agents and the money pulse below. */
+.g3d-k { margin: 0; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.g3d-live { display: grid; gap: 8px 12px; align-items: center; justify-items: start; }
+@media (min-width: 700px) { .g3d-live { grid-template-columns: auto minmax(0, 1fr); } }
+.g3d-clock { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 10px; border-radius: 99px; background: var(--hue-soft); border: 1px solid var(--line); font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.02rem; white-space: nowrap; }
+.g3d-clock::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 3px var(--good-bg); }
+@media (prefers-reduced-motion: no-preference) { .g3d-clock::before { animation: g3d-live 2s ease-in-out infinite; } }
+@keyframes g3d-live { 50% { opacity: .35; } }
+.g3d-due { list-style: none; margin: 0; padding: 0; width: 100%; min-width: 0; display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 700px) { .g3d-due { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.cd { display: grid; min-width: 0; padding: 5px 10px; border-radius: 10px; border: 1px solid var(--line); border-left: 3px solid var(--hue); background: var(--panel); font-size: .8rem; line-height: 1.3; }
+.cd .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.cd .d { font-family: var(--mono); font-size: .76rem; color: var(--muted); white-space: nowrap; }
+.cd.warn { background: var(--warn-bg); border-color: transparent; border-left-color: var(--warn); } .cd.warn .d { color: var(--warn); }
+.cd.bad { background: var(--bad-bg); border-color: transparent; border-left-color: var(--bad); } .cd.bad .d { color: var(--bad); font-weight: 700; }
+.cd.none { grid-column: 1 / -1; color: var(--muted); border-left-color: var(--line); }
+.g3d-unit { border-radius: 12px; overflow: hidden; background: #071220; box-shadow: 0 6px 24px -12px rgb(3 8 18 / .55); }
+.g3d-unit .g3d-stage { border-radius: 0; }
+.g3d-sats { position: absolute; inset: 0; pointer-events: none; }
+.sat { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; padding: 0; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; pointer-events: auto; will-change: transform; }
+.sat.off { visibility: hidden; }
+.sat i { width: 7px; height: 7px; border-radius: 50%; background: #f9d3e1; opacity: .7; box-shadow: 0 0 0 1.5px var(--c-agents); }
+.sat.working i { box-shadow: 0 0 0 1.5px var(--warn), 0 0 8px var(--warn); }
+.sat.fresh i { width: 8px; height: 8px; background: #fff; opacity: 1; box-shadow: 0 0 0 2px var(--c-agents), 0 0 12px 2px rgb(247 131 172 / .75); }
+@media (prefers-reduced-motion: no-preference) { .sat.fresh i { animation: g3d-live 2.4s ease-in-out infinite; } }
+.sat:focus-visible { outline: 2px solid #dbeaf7; outline-offset: 0; }
+.g3d-cap { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; margin: 0; padding: 6px 10px; border-radius: 10px; background: rgb(3 8 18 / .86); border: 1px solid rgb(247 131 172 / .4); color: #dbeaf7; font-size: .8rem; overflow-wrap: anywhere; }
+.g3d-feedbox { padding: 8px 12px 10px; border-top: 1px solid rgb(120 180 230 / .16); color: #dbeaf7; }
+.g3d-feedbox .g3d-k { color: #8fa6bd; }
+.g3d-feed { list-style: none; margin: 4px 0 0; padding: 0; display: grid; font-size: .82rem; }
+.g3d-feed li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 4px 6px; margin: 0 -6px; border-radius: 6px; border-top: 1px solid rgb(120 180 230 / .1); }
+.g3d-feed li:first-child { border-top: 0; }
+.g3d-feed .tx { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g3d-feed .meta { font-family: var(--mono); font-size: .72rem; color: #8fa6bd; white-space: nowrap; }
+.g3d-feed li.empty { display: block; color: #8fa6bd; }
+@media (max-width: 560px) { .g3d-feed li { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 3px; } }
+.g3d-feed li.fresh { background: rgb(108 198 255 / .16); box-shadow: inset 3px 0 0 #6cc6ff; }
+@media (prefers-reduced-motion: no-preference) {
+  .g3d-feed li.fresh { animation: g3d-feed-in .5s ease-out, g3d-glow 4s ease-out; }
+  .g3d-feed li { transition: background 1s; }
+}
+@keyframes g3d-feed-in { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes g3d-glow { from { background: rgb(108 198 255 / .38); } }
+.g3d-agents { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ag { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--panel); font-size: .8rem; }
+.ag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.ag.good::before { background: var(--good); } .ag.warn::before { background: var(--warn); }
+.ag.fresh::before { box-shadow: 0 0 0 3px var(--good-bg); }
+.ag .when { color: var(--muted); font-size: .76rem; }
+.ag.none::before { display: none; }
+.g3d-block { display: grid; gap: 6px; }
+.g3d-mh { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.g3d-mh .tot { font-size: .8rem; color: var(--muted); }
+#g3d-pl { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 500; margin-left: 6px; }
+.g3d-gauges { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px 20px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.gg { --tone: var(--muted); display: grid; gap: 5px; min-width: 0; }
+.gg.good { --tone: var(--good); } .gg.warn { --tone: var(--warn); } .gg.bad { --tone: var(--bad); }
+.gg .gh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.gg .tk { font-weight: 700; }
+.gg .px { color: var(--tone); }
+.gg .up { color: var(--muted); font-size: .76rem; }
+.gauge { position: relative; height: 8px; margin: 4px 7px; border-radius: 99px; background: linear-gradient(90deg, var(--bad-bg), var(--bg) 45%, var(--good-bg)); border: 1px solid var(--line); }
+.gauge .buy { position: absolute; top: -5px; width: 2px; height: 16px; margin-left: -1px; border-radius: 1px; background: var(--muted); }
+.gauge .dot { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--tone); border: 2px solid var(--panel); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 28%, transparent), 0 0 12px var(--tone); }
+@media (prefers-reduced-motion: no-preference) { .gauge .dot, .gauge .buy { transition: left .9s cubic-bezier(.2, .8, .2, 1); } }
+.gg .ends { display: flex; justify-content: space-between; gap: 6px; font-family: var(--mono); font-size: .7rem; color: var(--muted); white-space: nowrap; }
+.g3d-gauges .empty { grid-column: 1 / -1; }
+/* Time slider: drag back through the last 30 days. Big thumb so it's easy to grab on a phone. */
+.g3d-time { display: grid; gap: 4px; }
+.g3d-time label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+#g3d-date { font-family: var(--display); font-weight: 600; font-size: 1.02rem; }
+#g3d-sum { color: var(--muted); font-size: .86rem; }
+.g3d-time .row { display: flex; align-items: center; gap: 10px; }
+.btn.ghost.g3d-play { flex: none; min-width: 4.8em; color: var(--hue); border-color: var(--hue); }
+.g3d-track { flex: 1; min-width: 0; }
+.g3d-track input { --fill: 100%; width: 100%; height: 36px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+.g3d-track input::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(var(--hue), var(--hue)) 0 0 / var(--fill) 100% no-repeat, var(--line); }
+.g3d-track input::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: var(--panel); border: 3px solid var(--hue); box-shadow: 0 1px 3px rgb(16 24 40 / .25); }
+.g3d-track input::-moz-range-track { height: 6px; border-radius: 99px; background: var(--line); }
+.g3d-track input::-moz-range-progress { height: 6px; border-radius: 99px; background: var(--hue); }
+.g3d-track input::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--panel); border: 3px solid var(--hue); }
+.g3d-ends { display: flex; justify-content: space-between; font-size: .72rem; color: var(--muted); margin-top: -4px; }
+@media (prefers-reduced-motion: no-preference) { .g3d-pulse { transform-box: fill-box; transform-origin: center; animation: g3d-pulse .7s ease-out 2 both; } }
+@keyframes g3d-pulse { from { transform: scale(1); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+.boards { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.boards .k { flex-basis: 100%; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.boards a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--hue-soft); color: var(--ink); text-decoration: none; font-weight: 700; font-size: .86rem; }
+.boards a::after { content: "\2197"; color: var(--hue); font-weight: 400; }
+.boards a:hover { border-color: var(--hue); }
+a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: no-preference) { .tick, .btn { transition: background .15s, border-color .15s; } details.done-list summary::before { transition: transform .15s; } }
 </style>
 
 <div class="wrap">
   <header>
     <div>
-      <h1>Daily Monitor</h1>
+      <h1>Daily <span class="hl">Monitor</span></h1>
       <div class="date" id="today"></div>
     </div>
     <div class="status-line" id="conn">Connecting to your board…</div>
   </header>
 
-  <section class="now" aria-labelledby="h-now">
-    <h2 id="h-now">Right now <small id="now-count"></small></h2>
+  <div class="percy" id="percy" data-mood="happy">
+    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <g stroke="var(--percy-line)" stroke-width="1.5">
+        <ellipse cx="19" cy="15" rx="7" ry="10" transform="rotate(-18 19 15)" fill="var(--percy-fur)"/>
+        <ellipse cx="45" cy="15" rx="7" ry="10" transform="rotate(18 45 15)" fill="var(--percy-fur)"/>
+        <ellipse cx="22" cy="58" rx="6" ry="3.5" fill="var(--percy-fur)"/>
+        <ellipse cx="42" cy="58" rx="6" ry="3.5" fill="var(--percy-fur)"/>
+        <circle cx="32" cy="36" r="21" fill="var(--percy-fur)"/>
+      </g>
+      <ellipse cx="19.5" cy="15.5" rx="3.2" ry="5.5" transform="rotate(-18 19.5 15.5)" fill="var(--percy-ear)"/>
+      <ellipse cx="44.5" cy="15.5" rx="3.2" ry="5.5" transform="rotate(18 44.5 15.5)" fill="var(--percy-ear)"/>
+      <ellipse cx="32" cy="45" rx="13" ry="10" fill="var(--percy-belly)"/>
+      <g class="eyes" fill="var(--percy-eye)">
+        <circle cx="24.5" cy="33" r="3.6"/><circle cx="39.5" cy="33" r="3.6"/>
+        <circle cx="25.7" cy="31.8" r="1.2" fill="#fff"/><circle cx="40.7" cy="31.8" r="1.2" fill="#fff"/>
+      </g>
+      <ellipse cx="19" cy="40" rx="3.2" ry="2" fill="var(--percy-ear)" opacity=".7"/>
+      <ellipse cx="45" cy="40" rx="3.2" ry="2" fill="var(--percy-ear)" opacity=".7"/>
+      <ellipse cx="32" cy="38" rx="1.9" ry="1.3" fill="var(--percy-eye)"/>
+      <path id="percy-mouth" d="M28.8 40.6q3.2 2.8 6.4 0" fill="none" stroke="var(--percy-eye)" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+    <p class="bubble" id="percy-say" aria-live="polite">Hi, I'm Percy. Getting your board…</p>
+  </div>
+
+  <div class="glance" aria-label="At a glance">
+    <a class="gl tasks" href="#h-tasks"><span class="k">Tasks open</span><span class="v" id="g-tasks">–</span><span class="s" id="g-tasks-s"></span></a>
+    <a class="gl money" href="#h-money"><span class="k">Money open</span><span class="v" id="g-money">–</span><span class="s" id="g-money-s"></span></a>
+    <a class="gl stocks" href="#h-stocks"><span class="k">Stocks</span><span class="v" id="g-stocks">–</span><span class="s" id="g-stocks-s"></span></a>
+  </div>
+
+  <div class="legend" aria-label="What the coloured labels mean">
+    <span>Labels:</span>
+    <span class="item"><span class="chip bad">Late</span> past its date</span>
+    <span class="item"><span class="chip warn">Today</span> due today or tomorrow</span>
+    <span class="item"><span class="chip warn">Near</span> price close to your stop</span>
+    <span class="item"><span class="chip good">Ran</span> finished fine</span>
+  </div>
+
+  <section class="now" data-hue="now" aria-labelledby="h-now">
+    <h2 id="h-now"><span class="ttl"><span class="dot"></span>Right now</span> <small id="now-count"></small></h2>
     <div id="now-lead" class="lead">Loading your next move…</div>
     <div id="now-note" class="n"></div>
     <div><button class="btn" id="now-done" hidden>Mark done</button></div>
   </section>
 
   <div class="grid">
-    <section aria-labelledby="h-tasks">
-      <h2 id="h-tasks">Today and this week <small id="task-progress"></small></h2>
+    <section data-hue="tasks" aria-labelledby="h-tasks">
+      <h2 id="h-tasks"><span class="ttl"><span class="dot"></span>Today and this week</span> <small id="task-progress"></small></h2>
+      <p class="help">Tick the box when a task is done. Tap a task to read its full note.</p>
       <div class="bar" aria-hidden="true"><i id="task-bar" style="width:0%"></i></div>
       <div id="tasks"></div>
       <form class="add" id="add-task">
@@ -132,32 +340,89 @@ form.add input[type=text] { flex: 1 1 200px; }
       </form>
     </section>
 
-    <section aria-labelledby="h-money">
-      <h2 id="h-money">Money <small id="money-sum"></small></h2>
+    <section data-hue="money" aria-labelledby="h-money">
+      <h2 id="h-money"><span class="ttl"><span class="dot"></span>Money</span> <small id="money-sum"></small></h2>
+      <p class="help">Bills and money alerts. A red stripe means it needs a decision from you. Tick it once it's paid or handled.</p>
       <ul class="rows" id="money"></ul>
     </section>
 
-    <section aria-labelledby="h-stocks">
-      <h2 id="h-stocks">Stocks <small id="stocks-asof"></small></h2>
+    <section data-hue="stocks" aria-labelledby="h-stocks">
+      <h2 id="h-stocks"><span class="ttl"><span class="dot"></span>Stocks</span> <small id="stocks-asof"></small></h2>
+      <p class="help"><b>Stop</b> is the price where you planned to sell to limit a loss. <b>Target</b> is the price you hoped to reach. Gain is how far up or down you are.</p>
       <div class="tiles" id="stock-tiles"></div>
       <div class="scroll"><table id="positions"></table></div>
     </section>
 
-    <section aria-labelledby="h-market">
-      <h2 id="h-market">Markets <small id="market-asof"></small></h2>
+    <section data-hue="market" aria-labelledby="h-market">
+      <h2 id="h-market"><span class="ttl"><span class="dot"></span>Markets</span> <small id="market-asof"></small></h2>
+      <p class="help">How the overall market is doing today, in one line.</p>
       <div id="market-line" class="t"></div>
       <div id="market-know" class="n"></div>
       <div class="scroll"><table id="indexes"></table></div>
     </section>
 
-    <section aria-labelledby="h-agents">
-      <h2 id="h-agents">Agents</h2>
+    <section data-hue="agents" aria-labelledby="h-agents">
+      <h2 id="h-agents"><span class="ttl"><span class="dot"></span>Agents</span></h2>
+      <p class="help">Your helpers, what they last found, and when they last ran.</p>
       <ul class="rows agents" id="agents"></ul>
     </section>
 
-    <section aria-labelledby="h-log">
-      <h2 id="h-log">Log <small>latest first</small></h2>
+    <section data-hue="log" aria-labelledby="h-log">
+      <h2 id="h-log"><span class="ttl"><span class="dot"></span>Log</span> <small>latest first</small></h2>
+      <p class="help">What got done, newest first.</p>
       <ul class="rows log" id="log"></ul>
+    </section>
+
+    <section class="span" data-hue="globe" aria-labelledby="h-3d">
+      <h2 id="h-3d"><span class="ttl"><span class="dot"></span>3D view</span> <small>from Philadelphia, PA</small></h2>
+      <p class="help">Each line from Philadelphia is one open item: teal for tasks, orange for money, violet for stocks. Red means it's late or a stock is under its stop. Drag sideways to turn the globe.</p>
+      <div class="g3d-live">
+        <time class="g3d-clock" id="g3d-clock" aria-label="Your local time">--:--:--</time>
+        <ul class="g3d-due" id="g3d-due" aria-label="Coming up next"></ul>
+      </div>
+      <div class="g3d-unit">
+        <div class="g3d-stage" id="g3d" data-state="loading">
+          <svg id="g3d-flat" aria-hidden="true"></svg>
+          <div id="g3d-gl" aria-hidden="true"></div>
+          <div class="g3d-sats" id="g3d-sats" aria-label="Your agents"></div>
+          <p class="g3d-note" id="g3d-note">Loading the 3D globe…</p>
+          <button class="g3d-home" id="g3d-home" type="button" hidden>Back to Philadelphia</button>
+          <p class="g3d-cap" id="g3d-cap" hidden></p>
+        </div>
+        <div class="g3d-feedbox">
+          <p class="g3d-k">Live activity</p>
+          <ol class="g3d-feed" id="g3d-feed" aria-label="Latest activity, newest first"></ol>
+        </div>
+      </div>
+      <div class="g3d-time">
+        <label for="g3d-day"><span id="g3d-date">Today</span> <span id="g3d-sum"></span></label>
+        <div class="row">
+          <button class="btn ghost g3d-play" id="g3d-play" type="button">Play</button>
+          <div class="g3d-track">
+            <input type="range" id="g3d-day" min="-30" max="0" step="1" value="0" aria-valuetext="Today">
+            <div class="g3d-ends" aria-hidden="true"><span>30 days ago</span><span>Today</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="help">Slide back up to 30 days. An item shows from 14 days before it's due (undated ones always) and leaves the day its log says it was done. Items finished without a log entry show as done. Stock warnings are today's only.</p>
+      <div class="legend" id="g3d-legend" aria-live="polite"></div>
+      <div class="g3d-block">
+        <p class="g3d-k">Agents at work</p>
+        <p class="help">The pink dots circling Philadelphia are your agents. A bright one ran in the last 6 hours. Tap one to see what it found.</p>
+        <ul class="g3d-agents" id="g3d-agents"></ul>
+      </div>
+      <div class="g3d-block">
+        <div class="g3d-mh"><p class="g3d-k">Money pulse</p><span class="tot">Total gain / loss <b id="g3d-pl">–</b></span></div>
+        <p class="help">Where each price sits between your stop (left) and target (right); the line is what you paid. Prices come only from your board, where Market Watch writes them.</p>
+        <ul class="g3d-gauges" id="g3d-gauges"></ul>
+      </div>
+      <nav class="boards" aria-label="Your other 3D boards">
+        <span class="k">Your other 3D boards</span>
+        <a href="https://claude.ai/artifact/1CdhDJmmhiPRjpTmuzWWm6" target="_blank" rel="noopener">Login Globe</a>
+        <a href="https://claude.ai/artifact/SmU1NdZJoJapivRpNkmVNM" target="_blank" rel="noopener">Breach Map 3D</a>
+        <a href="https://claude.ai/artifact/VESv9SuV4r6WuLStib56WB" target="_blank" rel="noopener">Wi-Fi Watch 3D</a>
+        <a href="https://dabulyeez.github.io/Letsgetitdone/monitor/street-map.html" target="_blank" rel="noopener">Street Map 3D</a>
+      </nav>
     </section>
   </div>
 </div>
@@ -179,6 +444,13 @@ form.add input[type=text] { flex: 1 1 200px; }
     if (dd === 1) return "Tomorrow";
     if (dd > 1 && dd <= 6) return parseDate(d).toLocaleDateString(undefined, { weekday: "short" });
     return short(d);
+  };
+
+  // Due chip shared by tasks and money: "Late" once the day has passed, amber for today and tomorrow.
+  const dueChip = (d) => {
+    const dd = daysUntil(d);
+    const c = dd != null && dd < 0 ? el("span", "chip bad", "Late") : el("span", "chip" + (dd != null && dd <= 1 ? " warn" : ""), dueLabel(d));
+    c.title = "Due " + short(d); return c;
   };
 
   $("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
@@ -210,6 +482,11 @@ form.add input[type=text] { flex: 1 1 200px; }
       $("now-done").hidden = true;
     }
     $("now-count").textContent = now.filter(open).length ? now.filter(open).length + " open today" : "";
+    const openAll = [...now, ...week].filter(open);
+    const lateN = openAll.filter((t) => daysUntil(t.due) != null && daysUntil(t.due) < 0).length;
+    const soonN = openAll.filter((t) => { const d = daysUntil(t.due); return d != null && d >= 0 && d <= 1; }).length;
+    $("g-tasks").textContent = state.tasks.length ? openAll.length : "–";
+    $("g-tasks-s").textContent = [lateN && lateN + " late", soonN && soonN + " due soon"].filter(Boolean).join(" · ") || (openAll.length ? "nothing late" : "all done");
 
     const all = [...now, ...week];
     const done = all.filter((t) => !open(t)).length;
@@ -256,11 +533,7 @@ form.add input[type=text] { flex: 1 1 200px; }
     const chips = el("div", "chips");
     if (t.status === "blocked") chips.append(el("span", "chip bad", "blocked"));
     else if (t.status === "doing") chips.append(el("span", "chip warn", "doing"));
-    if (!isDone && t.due) {
-      const dd = daysUntil(t.due);
-      const c = dd != null && dd < 0 ? el("span", "chip bad", "Late") : el("span", "chip" + (dd != null && dd <= 1 ? " warn" : ""), dueLabel(t.due));
-      c.title = "Due " + short(t.due); chips.append(c);
-    }
+    if (!isDone && t.due) chips.append(dueChip(t.due));
     li.append(b, mid, chips); return li;
   }
 
@@ -268,6 +541,10 @@ form.add input[type=text] { flex: 1 1 200px; }
     const items = [...state.money].sort((a, b) => (a.status === "done") - (b.status === "done") || (b.risk === true) - (a.risk === true) || String(a.due || "9").localeCompare(String(b.due || "9")));
     const openAmt = items.filter((m) => m.status !== "done" && !isNaN(+m.amount)).reduce((s, m) => s + +m.amount, 0);
     $("money-sum").textContent = items.some((m) => m.status !== "done") ? money(openAmt) + " open" : "";
+    const openM = items.filter((m) => m.status !== "done");
+    const lateM = openM.filter((m) => daysUntil(m.due) != null && daysUntil(m.due) < 0).length;
+    $("g-money").textContent = openM.length ? money(openAmt) : "$0";
+    $("g-money-s").textContent = openM.length ? openM.length + " open" + (lateM ? " · " + lateM + " late" : "") : "nothing open";
     const list = $("money");
     if (!items.length) return setEmpty(list, "No bills or alerts on the board yet.");
     list.replaceChildren(...items.map((m) => {
@@ -276,15 +553,18 @@ form.add input[type=text] { flex: 1 1 200px; }
       b.setAttribute("aria-pressed", m.status === "done"); b.setAttribute("aria-label", (m.status === "done" ? "Reopen " : "Mark paid: ") + m.title);
       b.onclick = () => toggleMoney(m);
       const mid = el("div"); mid.append(el("div", "t", m.title));
-      const sub = [m.kind, m.due && "due " + short(m.due), m.note].filter(Boolean).join(" · "); if (sub) mid.append(el("div", "n", sub));
-      li.append(b, mid, el("span", "num", m.amount != null && m.amount !== "" ? money(m.amount) : "")); return li;
+      const sub = [m.kind, m.due && m.status === "done" && "due " + short(m.due), m.note].filter(Boolean).join(" · "); if (sub) mid.append(el("div", "n", sub));
+      const right = el("div", "chips");
+      right.append(el("span", "num", m.amount != null && m.amount !== "" ? money(m.amount) : ""));
+      if (m.status !== "done" && m.due) right.append(dueChip(m.due));
+      li.append(b, mid, right); return li;
     }));
   }
 
   function renderStocks() {
     const ps = state.positions;
     const tiles = $("stock-tiles"), tbl = $("positions");
-    if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; return; }
+    if (!ps.length) { tiles.replaceChildren(el("div", "empty", "No positions yet. Ask the market agent to add your holdings.")); tbl.replaceChildren(); $("stocks-asof").textContent = ""; $("g-stocks").textContent = "–"; $("g-stocks-s").textContent = "no holdings yet"; return; }
     let cost = 0, value = 0, priced = 0;
     const COLS = ["Ticker", "Shares", "Buy", "Last", "Gain", "Stop", "Target"];
     const head = el("tr", "head"); COLS.forEach((h) => head.append(el("th", "", h)));
@@ -311,6 +591,9 @@ form.add input[type=text] { flex: 1 1 200px; }
     const t1 = el("div", "tile"); t1.append(el("div", "k", "Total gain / loss"), el("div", "v " + (total > 0 ? "pos" : total < 0 ? "neg" : ""), priced ? money(total) : "—"));
     const t2 = el("div", "tile"); t2.append(el("div", "k", "Market value"), el("div", "v", priced ? money(value) : "—"));
     tiles.replaceChildren(t1, t2);
+    $("g-stocks").textContent = priced ? money(total) : "–";
+    $("g-stocks").style.color = total < 0 ? "var(--bad)" : total > 0 ? "var(--good)" : "";
+    $("g-stocks-s").textContent = priced ? (total < 0 ? "down overall" : total > 0 ? "up overall" : "even") + " · " + ps.length + " holdings" : ps.length + " holdings, no prices yet";
     const latest = ps.map((p) => p.lastUpdated).filter(Boolean).sort().pop();
     $("stocks-asof").textContent = latest ? "prices " + when(latest) : "";
   }
@@ -360,8 +643,539 @@ form.add input[type=text] { flex: 1 1 200px; }
     }));
   }
 
+  // ---- Percy and the 3D view: both read the same state the cards above render, no extra subscriptions. ----
+  let boardStatus = "loading";   // "loading" until the db answers, then "live" or "signed-out"
+  // Percy and the legend wait until tasks, money and positions have each answered once, so they never say "all clear" too early.
+  const loaded = new Set();
+  const boardReady = () => ["tasks", "money", "positions"].every((n) => loaded.has(n));
+  const isLate = (d) => { const x = daysUntil(d); return x != null && x < 0; };
+  const stopHit = (p) => p.lastPrice != null && p.lastPrice !== "" && p.stop != null && p.stop !== "" && !isNaN(+p.lastPrice) && !isNaN(+p.stop) && +p.lastPrice <= +p.stop;
+  // Short, number-free name for Percy and the globe tooltips: "DEMOA near stop: $92 vs $90" -> "DEMOA near stop".
+  const plain = (s) => { const t = String(s || "").split(/[:(]| — | - /)[0].replace(/\$\s?[\d,]+(\.\d+)?/g, "").replace(/\s+/g, " ").trim(); return !t ? "an item" : t.length > 42 ? t.slice(0, 40).trimEnd() + "…" : t; };
+
+  function boardItems() {
+    const tasks = state.tasks.filter((t) => (t.group === "now" || t.group === "week") && t.status !== "done")
+      .map((t) => ({ kind: "tasks", title: t.title, late: isLate(t.due), soon: daysUntil(t.due) != null && daysUntil(t.due) >= 0 && daysUntil(t.due) <= 1 }));
+    const money = state.money.filter((m) => m.status !== "done").map((m) => ({ kind: "money", title: m.title, late: isLate(m.due), risk: m.risk === true }));
+    const stocks = state.positions.map((p) => ({ kind: "stocks", title: String(p.ticker || "Stock") + (stopHit(p) ? " is under its stop" : ""), late: stopHit(p) }));
+    return { tasks, money, stocks };
+  }
+
+  function renderPercy() {
+    const say = $("percy-say"), mouth = $("percy-mouth");
+    const set = (text, card, mood) => {
+      const parts = [text];
+      if (card) { const a = el("a", "", card[0]); a.href = "#" + card[1]; parts.push(" See ", a, "."); }
+      // Only rewrite the bubble when the words change, so screen readers don't repeat it on every update.
+      const key = text + "|" + (card ? card[0] : "");
+      if (say.dataset.key !== key) { say.replaceChildren(...parts); say.dataset.key = key; }
+      $("percy").dataset.mood = mood;
+      mouth.setAttribute("d", mood === "worry" ? "M29.2 41.6q2.8-1.8 5.6 0" : "M28.8 40.6q3.2 2.8 6.4 0");
+    };
+    if (boardStatus === "loading" || (boardStatus === "live" && !boardReady())) return;
+    if (boardStatus === "signed-out") return set("Hi, I'm Percy. Sign in to claude.ai and I'll keep watch.", null, "happy");
+    const { tasks, money, stocks } = boardItems();
+    if (!state.tasks.length && !state.money.length && !state.positions.length) return set("Hi, I'm Percy. Add a task below and I'll keep watch.", null, "happy");
+    const TASKS = ["Tasks", "h-tasks"], MONEY = ["Money", "h-money"], STOCKS = ["Stocks", "h-stocks"];
+    // Most urgent first: a stock under its stop, a money alert needing a decision, a late bill, a late task.
+    const needs = [
+      ...stocks.filter((s) => s.late).map((s) => [s.title, STOCKS]),
+      ...money.filter((m) => m.risk).map((m) => [plain(m.title) + " needs a decision", MONEY]),
+      ...money.filter((m) => m.late && !m.risk).map((m) => [plain(m.title) + " is late", MONEY]),
+      ...tasks.filter((t) => t.late).map((t) => ["“" + plain(t.title) + "” is late", TASKS]),
+    ];
+    if (needs.length === 1) return set(`1 thing needs you: ${needs[0][0]}.`, needs[0][1], "worry");
+    if (needs.length) return set(`${needs.length} things need you. First: ${needs[0][0]}.`, needs[0][1], "worry");
+    const soon = tasks.filter((t) => t.soon);
+    if (soon.length) return set(`Nothing late. Due soon: “${plain(soon[0].title)}”.`, TASKS, "happy");
+    set("All clear today! " + (tasks.length ? `${tasks.length} open, none late.` : "Everything's done."), null, "happy");
+  }
+
+  const PHL = { lat: 39.9526, lng: -75.1652 };
+  const VIEW = { lat: 34, lng: PHL.lng, altitude: 1.95 };
+  // Wide stages are shorter relative to their width, so come in closer there.
+  const fitView = () => { VIEW.altitude = stage.clientWidth > 640 ? 1.6 : 1.95; };
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Land outlines from the Login Globe's map, merged and simplified: rings of [lng, lat] steps in fifths of a degree.
+  const LAND = "-900,-80,0,-3,1797,-1,3,4;196,-23,0,-19,6,-10,2,-21,-7,-11,-10,-4,-13,-11,4,-11,-3,-12,-12,-7,1,-5,-2,-8,-21,-22,-12,-6,-16,1,-15,-5,-7,5,0,11,-9,15,-6,8,-5,24,-12,24,5,21,4,6,-2,17,-4,13,-1,1,-1,4,-5,5,-11,14,3,11,1,6,-5,13,-14,-3,-7,10,-9,0,-4,0,-4,-1,-19,-5,-25,-3,-18,12,-9,11,-10,10,-7,7,-1,4,0,2,-4,6,6,7,1,19,-4,5,0,2,13,24,24,19,5,16,8,5,5,8,19,-3,18,7,35,2,11,-3,-2,-10,6,-6,19,-5,3,-4,16,-6,9,13,10,-1,12,-5,19,-4,5,3,21,-1,5,9,4,8,1,6,-7,5,-11,-3,-25,2,-7,14,15,9,10,-1,20,5,16,-5,16,3,-8,9,-17,9,8,10,-16,-7,7,-3,-13,-4,-2,8,-13,3,-6,-7,-5,-7,-3,-9,4,-5,-14,-1,-16,-2,6,-11,-12,-7,-7,14,-4,11,-5,3,-12,6,-11,9,1,1,-8,-1,1,-7,16,-12,13,-6,-11,-12,-4,10,-13,6,-20,16,-7,-4,-14,-1,-8,-5,-11,-7,-3,-11,-12,-11,-16,-3,-10,5,-7,-1,-4,10,3,15,5,10,30,-2,4,13,-17,13,15,0,21,13,4,1,7,8,11,2,8,8,-3,8,13,6,-3,-14,5,-5,16,-1,17,5,10,-2,8,4,-1,4,3,7,14,2,-5,7,23,1,0,6,-26,-4,-7,5,-2,9,22,13,-7,4,-9,-1,-4,-7,-18,-8,-3,-7,8,-7,-10,-6,-5,-13,-14,-4,-10,17,-13,-2,-14,1,-3,17,28,12,21,17,22,10,19,2,8,4,18,1,15,-4,0,-4,27,-3,18,-5,5,-6,-14,-4,-22,4,5,-12,10,-3,1,7,12,-3,1,4,24,7,-6,9,14,-2,1,-8,9,5,28,6,-2,-3,27,3,6,-3,3,8,15,-1,25,-8,3,3,-13,12,17,10,13,-1,-4,-7,4,-12,5,-3,-12,-10,6,-1,13,8,-9,18,32,5,9,-3,-4,9,31,2,2,6,30,4,17,0,21,2,6,4,45,-2,14,-7,-22,-6,21,-4,10,2,17,-3,21,-1,0,4,27,-4,-1,-5,14,-6,5,5,38,-2,3,7,46,-3,17,-7,30,0,10,-7,34,1,9,-5,4,7,41,-3,-1793,-2,27,-10,14,0,10,-5,-14,-3,-6,-6,-12,6,-18,2,-1,-4,1800,0,-13,-2,10,-8,-29,-7,-16,-9,-7,4,-14,-4,-13,0,-8,-8,6,-3,-5,-14,-9,-2,-18,-17,-7,22,7,12,8,1,26,16,4,7,-21,-10,-4,6,-13,-2,-13,-8,4,-3,-19,-2,1,4,-46,-3,-35,-21,15,-5,9,2,7,-6,-7,-23,-26,-25,-13,-1,-7,-5,-16,-12,4,-6,5,-9,-2,-9,-13,-3,-1,17,-7,2,-3,9,-16,-6,3,11,-20,-11,18,-11,-10,-8,14,-17,0,-9,-17,-26,-14,-9,-25,-7,-14,1,-12,-13,16,-19,2,-18,-20,-15,-4,9,-9,9,-13,6,-4,-17,6,-13,9,-6,6,-7,1,-18,-11,8,-7,18,-7,10,0,8,1,7,-8,28,-9,-6,-6,1,1,11,-10,12,-5,11,-12,-4,-10,-3,-10,-10,-23,-18,-3,-27,-11,-12,-5,5,-15,35,-5,27,-11,-3,-11,14,-9,9,-25,-2,-20,4,-5,7,-8,-4,-16,7,-7,12,-8,-1,-3,0,2,-7,9,-10,3,-9,3,-1,1,-2,12,0,10,9,1,-1,1,-4,17,-13,-10,-17,-13,-9,-10,-3,-5,-5,-18,-8,-26,-7,-3,19,-9,15,-9,9,-1,7,-19,27,-1,7,0,1,-5,-10,-6,6,20,-34,3,-17,5,-3,4,-10,19,-17,1,-6,5,-5,24,5,11,3,-9,-26,-14,-20,-17,-13,-8,-9|244,192,17,-8,9,2,-7,23,-11,14,13,3,0,8,-19,-2,-13,-9,10,-14,5,-6;-705,349,22,-5,42,8,12,-5,16,2,44,-7,2,-4,36,6,9,-4,30,-1,-1,3,20,-2,2,5,-11,5,6,10,12,-3,18,-11,9,-10,9,13,22,-3,-1,-10,-22,-3,-8,-9,-13,-4,-21,-16,-2,-9,7,-1,5,-9,16,-1,20,-7,14,-1,4,-15,7,-5,7,7,-6,10,16,10,-10,11,6,5,-4,13,22,0,12,-6,9,-1,2,-10,8,-4,15,11,16,-17,-2,-3,22,-9,9,-12,-22,-10,-32,0,-24,-17,23,12,11,-15,23,-1,-28,-12,-9,8,-18,-12,4,-6,-14,-2,-15,-16,0,-12,-14,-9,-14,-15,7,-20,-6,-8,-13,24,-13,2,-16,-1,1,-5,-11,2,-15,-1,-14,-10,1,-8,-3,-17,10,-18,7,-3,18,5,3,9,16,3,-6,-15,-4,-14,4,0,19,0,6,-4,-2,-20,5,-7,6,-4,9,4,11,-5,10,10,18,9,2,-3,0,-4,13,2,3,-4,32,1,-3,-4,13,-8,13,-12,16,-1,12,-8,8,-16,-2,-5,9,-1,26,-11,17,-2,14,-10,10,-3,0,-18,-19,-24,-4,-29,-11,-17,-22,-5,-10,-9,-2,-14,-23,-26,-8,-6,-17,5,8,-15,-12,-9,-16,0,1,-9,-15,-2,9,-8,-9,-4,-2,-8,-10,-7,10,-4,-18,-18,3,-7,-11,-3,-1,-5,-20,8,-3,18,7,8,-7,2,6,12,6,-1,2,10,-8,-4,6,30,9,24,0,18,2,6,5,31,-2,15,-28,19,-19,37,-7,5,4,14,-3,6,5,15,6,3,8,12,-3,17,-7,9,-4,-7,-15,3,-14,10,0,4,-8,10,-2,2,-11,2,-11,4,-12,8,-10,-3,-34,13,-12,11,-1,12,-16,18,-15,13,-5,11,-8,3,1,-8,15,-18,11,-16,-14,7,-1,6,-10,6,1,7,-7,5,-8,15,-7,7,-9,2,-17,23,-4,19,3,14,-3,14,11,-5,-2,8,-23,9,-16,20,-17,17,-13,0,-16,7,-21,2,-16,4,-4,-4,-19,-4,2,8,-13,-7,4,-3,-26,-14,-33,-7,22,7,14,8,4,7,-10,-3,-24,7,-12,8,8,9,19,3,0,5,-21,-2,-16,6,19,5,14,-2,-19,9,17,12,27,5,22,-4;-399,364,-3,5,21,-5;-468,375,-16,0,10,3;-441,372,-21,2,-7,8,-15,4,26,-2,12,-6,40,1,7,-4,-11,-3;-278,257,-6,-8,17,-3,4,-8,-33,0,9,16;-419,326,18,-7,-15,2,-12,-6,-1,14;-394,362,5,2,45,-11,9,-7,-9,-2,35,-10,-11,-9,-14,7,-7,-4,14,-6,2,-9,-19,6,13,-9,-13,2,-30,10,-15,-1,0,6,19,0,7,9,-4,4,-17,4,-11,7,-12,-2,-36,3,-8,9,9,7,30,1;-473,371,20,-2,-18,-9,-9,5;-614,381,18,7,15,0,-1,-4,-18,-4;-527,397,23,-3,6,-4,-17,2;-618,243,-10,1,-14,10,13,-3;-608,372,20,-1,10,-4,-18,-4,-6,-6,-13,-2,-15,4,10,9,-5,3;-539,379,7,-4,-29,-3,2,4,-30,0,12,6,32,-5;-533,365,11,-10,17,-5,-7,-6,-18,2,-37,-3,-20,7,25,2,-28,1,9,4,-16,1,8,6,13,3,3,-4,23,2,9,-7,-1,7;-502,364,0,5,15,0,4,-6,-9,-7,-20,7;-492,384,1,-9,-13,0,-9,7;-480,403,18,3,23,-4,10,-5,-16,-6,-19,1;-458,409,31,4,63,3,35,-1,20,-3,-47,-13,-29,-2,8,-4,-26,-12,-44,1,7,10,15,5;-481,347,0,-3,-18,3,8,4;705,-13,18,-6,21,-27,10,-5,-14,0,-16,13,-11,-9,-8,1,-4,5,-13,-1,5,5,-3,10,-22,9,-15,13,17,1,2,-10,20,5;757,-29,-8,-3,-7,5;577,27,7,8,12,-8,-7,-6,-2,-5,8,-11,-6,-1,-6,-11,-2,-13,-15,4,-15,1,-6,13,3,12,8,-1,15,14;615,4,7,-2,-21,-1,15,-28,-5,1,-9,11,0,-13,-5,1,-3,13,6,17;542,-32,21,-3,16,-7,-6,-2,-32,5,-14,5,3,5;522,-5,9,-10,-2,-14,-16,8,-20,30,-16,16,10,1,16,-16,5,0;-343,-263,4,-6,14,-4,-10,-1,-6,-4,-14,3,-18,11,17,-6;-359,90,-7,10,7,-1,17,-6;469,405,11,1,21,-7,-12,-5,-22,3,-11,5;514,396,11,-4,-28,-2;694,381,31,-3,-4,-4,-26,-1,-10,3;699,367,11,2,8,-3;224,403,34,1,-20,-4;268,369,10,6,28,6,35,4,0,-4,-33,-5,-16,-4,-15,-10,11,-8,-20,0,-10,3;715,269,8,-24,-7,2,-3,-8,5,-5,-8,-4,1,25,-3,12;-900,358,0,-4,1795,0,-1,1;-306,-259,13,4,-4,-6;76,398,9,2,23,-5,-13,-2,-9,-9,-30,10,-4,4;137,400,-7,-2,-30,0,-13,4,28,1;124,389,-12,-2,-8,4;-234,413,17,3,42,2,40,0,31,-4,-9,-2,-47,-1,36,-2,8,-3,37,4,18,-4,-28,-5,-10,-7,7,-9,-16,-2,9,-3,2,-9,-24,-8,12,-10,-9,-1,-10,5,-4,-6,20,0,-27,-9,-20,-1,-12,-8,-28,-6,-7,-10,-8,-4,-3,-13,-24,4,-17,14,-12,18,13,8,3,6,-13,-4,-5,8,15,-1,-22,5,5,5,-19,15,-13,3,-37,-1,-14,5,23,2,-21,1,-11,4,37,5,-11,4,29,6,-2,2,27,2,21,-2,13,3,29,-4;-411,116,19,-3,21,-12,-18,-2,-5,9,-20,5;248,-62,4,-14,-17,-49,-15,0,-4,15,6,10,0,19,10,2;-31,269,-3,-8,-16,-2,2,10,10,7;884,-200,-4,-6,-11,8,3,15,-9,10,9,-3,5,-10,16,-2;848,-218,16,16,7,-7,-24,-24,-14,2,2,5;738,-204,2,-12,-10,-2,-6,14;631,-161,-13,-8,-19,-1,-9,-5,-15,4,4,10,-8,20,-4,19,4,13,33,11,11,16,20,13,7,-5,11,11,10,2,-1,5,23,-6,-8,-12,19,-13,8,0,5,12,-1,13,5,9,7,-20,7,-2,5,-20,12,-7,4,-10,16,-14,4,-15,-4,-17,-5,-7,-9,-22,-18,-8,-29,5,-5,9,-14,5,5,12,-9,-10,-9,11,-14,6;409,38,-7,-8,-4,11,3,8;547,91,-1,8,8,1;609,122,-5,-12,-3,8;74,191,2,-8,-14,5;44,204,4,-8,-6,0;-15,267,-13,10,-3,7,6,9,10,0,-5,-5,10,0,0,-8,12,-15,6,-1,-5,-10,-32,-3,7,5,-1,11;-73,332,5,-6,-25,-9,-21,3,5,2,-13,6,11,4,8,-3;632,42,-5,-14,-9,11,-6,1,19,6;612,91,-3,-19,-9,3,4,18;628,61,-4,-10,-3,12;709,196,-5,-17,-25,-12,-4,6,-20,-4,5,-3,-3,-9,-10,9,16,11,15,1,19,13,5,15,5,1;723,220,5,-4,-12,-6,-8,3,2,15;662,167,12,2,-9,-5;-243,-390,23,-2,3,-8,-35,-5,-18,4,15,3;-331,-401,22,-1,6,4,2,-7,-21,0;-370,-356,10,0,1,8,8,4,9,-11,-2,-6,-27,-1;-512,-359,31,-4,-23,0;-819,-393,13,1,10,-5,-10,-1;-900,-424,5,3,23,-2,22,4,15,-4,45,-4,14,2,33,-3,27,3,2,2,-36,2,-18,3,4,8,-20,4,31,-1,17,4,2,3,-14,3,-29,2,-13,5,5,3,28,0,26,5,0,5,9,-1,46,6,77,0,29,3,32,-7,35,-1,-15,14,16,-1,20,-4,40,3,35,-4,6,3,20,-4,36,5,8,3,-5,11,3,14,24,14,22,6,-2,-5,-18,-3,2,-6,-17,-7,20,-17,5,-11,-7,-6,-43,-11,-33,-1,15,-4,-3,-3,-16,-1,0,-4,13,-5,79,-11,7,-4,42,7,35,-1,23,3,48,5,-5,6,-30,-1,-1,5,35,9,32,2,33,9,-3,3,31,13,14,-2,3,3,33,-3,49,8,6,-4,13,4,29,1,17,-4,33,2,18,4,5,4,24,-6,7,3,54,12,9,4,19,0,12,-6,18,-4,8,3,24,-3,4,-8,-8,-11,15,-1,14,11,19,2,8,5,18,6,20,0,6,5,13,-5,46,0,15,8,17,-7,20,2,17,4,10,-4,26,-3,8,3,32,-1,30,3,1,4,12,-8,40,0,6,-4,30,-5,8,1,42,-11,29,-1,14,-3,-10,-10,-16,-4,-9,-5,-4,-8,18,-9,-26,-2,-10,-9,20,-7,47,-10,14,1,20,-3";
+  const landFeatures = () => LAND.split(";").map((poly) => ({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: poly.split("|").map((ring) => {
+    const a = ring.split(",").map(Number), pts = []; let x = 0, y = 0;
+    for (let i = 0; i < a.length; i += 2) { x += a[i]; y += a[i + 1]; pts.push([x / 5, y / 5]); }
+    pts.push(pts[0]); return pts;
+  }) } }));
+  const g3d = { globe: null, sway: !reduceMotion, t0: 0, visible: true, marks: null, day: 0, flash: [], playing: 0, ping: false, onScreen: false, flat: null };
+  const stage = $("g3d");
+  const hues = () => { const cs = getComputedStyle(stage), v = (n) => cs.getPropertyValue(n).trim(); return { tasks: v("--c-tasks"), money: v("--c-money"), stocks: v("--c-stocks"), bad: v("--bad"), good: v("--good"), home: v("--sky") }; };
+  const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+  // Destination point from a start, a compass bearing and a distance, all in degrees.
+  function dest(from, brg, dist) {
+    const r = Math.PI / 180, p1 = from.lat * r, l1 = from.lng * r, th = brg * r, d = dist * r;
+    const p2 = Math.asin(Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(th));
+    const l2 = l1 + Math.atan2(Math.sin(th) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
+    return { lat: p2 / r, lng: ((l2 / r + 540) % 360) - 180 };
+  }
+  // ---- Time: the globe can show any of the last 30 days. Only the globe, legend and slider change; the cards above always show now. ----
+  // We know when an item was finished (its log entry, "log/done-<task id>" or "log/paid-<money id>") but not when it was added,
+  // so an item shows from 14 days before its due date (never later than today) and undated items show the whole time.
+  const RANGE = 30, LEAD = 14;
+  function timeline() {
+    const logDay = new Map(state.log.map((l) => [l.id, daysUntil(l.ts)]));
+    // Finish day: null while open, -Infinity when done but there's no log entry to date it (shows as done throughout).
+    const finished = (x, prefix) => x.status !== "done" ? null : (logDay.get(prefix + x.id) ?? -Infinity);
+    const from = (due) => { const d = daysUntil(due); return d == null ? -Infinity : Math.min(d - LEAD, 0); };
+    return {
+      tasks: state.tasks.filter((t) => t.group === "now" || t.group === "week")
+        .map((t) => ({ id: "t:" + t.id, kind: "tasks", title: t.title, due: daysUntil(t.due), from: from(t.due), done: finished(t, "done-") })),
+      money: state.money.map((m) => ({ id: "m:" + m.id, kind: "money", title: m.title, due: daysUntil(m.due), from: from(m.due), done: finished(m, "paid-") })),
+      // No price history, so stocks show all the time and the "under its stop" warning only on today.
+      stocks: state.positions.map((p) => ({ id: "s:" + p.id, kind: "stocks", title: String(p.ticker || "Stock"), hit: stopHit(p), due: null, from: -Infinity, done: null })),
+    };
+  }
+  const openOn = (x, k) => x.from <= k && (x.done == null || k < x.done);
+  const lateOn = (x, k) => x.kind === "stocks" ? x.hit && k === 0 : x.due != null && x.due < k;
+
+  // One mark per item, fanned out from Philadelphia: tasks to the north-west, money to the north-east, stocks to the south.
+  // Each item keeps one spot for the whole 30 days, so marks don't jump around as you slide.
+  const SECTOR = { tasks: -40, money: 45, stocks: 165 };
+  const MAX_MARKS = 12, MAX_SLOTS = 24;
+  function layoutMarks(k) {
+    const tl = timeline(), c = hues(), marks = [], slots = new Map(), items = {};
+    for (const kind of ["tasks", "money", "stocks"]) {
+      const inRange = tl[kind].filter((x) => x.from <= 0 && (x.done == null || x.done > -RANGE))
+        .sort((a, b) => (a.done != null) - (b.done != null) || (a.from - b.from) || a.id.localeCompare(b.id)).slice(0, MAX_SLOTS);
+      const n = inRange.length, spread = Math.min(18, 80 / Math.max(n, 1));
+      inRange.forEach((x, i) => slots.set(x.id, dest(PHL, SECTOR[kind] + (i - (n - 1) / 2) * spread, 14 + (i % 3) * 5)));
+      items[kind] = tl[kind].filter((x) => openOn(x, k)).map((x) => ({ ...x, late: lateOn(x, k) }));
+      items[kind].filter((x) => slots.has(x.id)).sort((a, b) => b.late - a.late).slice(0, MAX_MARKS)
+        .forEach((x) => marks.push({ ...x, ...slots.get(x.id), color: x.late ? c.bad : c[kind] }));
+    }
+    // Finished on day k: the "fly home" moment when you step forward onto that day.
+    const doneToday = [...tl.tasks, ...tl.money].filter((x) => x.done === k);
+    const flash = doneToday.filter((x) => slots.has(x.id)).map((x) => ({ ...x, ...slots.get(x.id), color: c.good }));
+    return { marks, items, c, doneToday, flash };
+  }
+
+  function renderLegend(items) {
+    if (boardStatus !== "live" || !boardReady()) {
+      $("g3d-legend").textContent = boardStatus === "signed-out" ? "Sign in to claude.ai to see your items on the globe." : "Loading your board…";
+      return;
+    }
+    const late = [...items.tasks, ...items.money, ...items.stocks].filter((x) => x.late).length;
+    const parts = [["tasks", items.tasks.length + (items.tasks.length === 1 ? " task open" : " tasks open")],
+      ["money", items.money.length + (items.money.length === 1 ? " money item open" : " money items open")],
+      ["stocks", items.stocks.length + (items.stocks.length === 1 ? " stock" : " stocks")]];
+    if (late) parts.push(["bad", late + " late or under stop"]);
+    $("g3d-legend").replaceChildren(...parts.map(([k, text]) => {
+      const s = el("span", "item"), sw = el("span", "sw"); sw.style.setProperty("--sw", k === "bad" ? "var(--bad)" : `var(--c-${k})`);
+      s.append(sw, text); return s;
+    }));
+  }
+
+  const dayLabel = (k) => { if (k === 0) return "Today"; const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + k); return k === -1 ? "Yesterday" : d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); };
+  function renderTime() {
+    const k = g3d.day, slider = $("g3d-day"), { items, doneToday } = g3d.marks;
+    let sum = "";
+    if (boardStatus === "live" && boardReady()) {
+      const open = items.tasks.length + items.money.length, late = [...items.tasks, ...items.money].filter((x) => x.late).length;
+      sum = [open + " open", late && late + " late", doneToday.length && doneToday.length + " finished that day"].filter(Boolean).join(" · ");
+    }
+    $("g3d-date").textContent = dayLabel(k);
+    $("g3d-sum").textContent = sum;
+    if (+slider.value !== k) slider.value = k;
+    slider.setAttribute("aria-valuetext", dayLabel(k) + (sum ? ", " + sum : ""));
+    slider.style.setProperty("--fill", (100 * (k + RANGE) / RANGE) + "%");
+  }
+
+  // ---- Live: clock, countdowns, activity, agents and the money pulse. Everything comes from the board's own
+  //      snapshots (already subscribed above) plus the viewer's clock; the page can't reach any other site. ----
+  const ago = (ts) => {
+    const t = new Date(ts); if (!ts || isNaN(t)) return "";
+    const s = Math.max(0, (Date.now() - t) / 1000);
+    if (s < 45) return "just now";
+    if (s < 3600) return Math.max(1, Math.floor(s / 60)) + " min ago";
+    if (s < 86400) return Math.floor(s / 3600) + " h ago";
+    const d = -daysUntil(ts);
+    return d <= 1 ? "yesterday" : d < 30 ? d + " days ago" : "on " + short(ts);
+  };
+  const agoEl = (tag, cls, ts, pre = "") => { const e = el(tag, cls, ts ? pre + ago(ts) : ""); if (ts) { e.dataset.ago = ts; e.dataset.pre = pre; } return e; };
+  const boardLive = () => boardStatus === "live" && boardReady();
+
+  // Up to 4 countdowns to the soonest due dates of open tasks and money items; late ones first.
+  function renderDue() {
+    const ul = $("g3d-due");
+    if (!boardLive()) return ul.replaceChildren();
+    const due = [...state.tasks.filter((t) => (t.group === "now" || t.group === "week") && t.status !== "done"), ...state.money.filter((m) => m.status !== "done")]
+      .map((x) => ({ title: x.title, d: daysUntil(x.due) })).filter((x) => x.d != null).sort((a, b) => a.d - b.d).slice(0, 4);
+    if (!due.length) return ul.replaceChildren(el("li", "cd none", "No due dates coming up"));
+    ul.replaceChildren(...due.map(({ title, d }) => {
+      const li = el("li", "cd" + (d < 0 ? " bad" : d <= 1 ? " warn" : ""));
+      li.append(el("span", "nm", plain(title)), el("span", "d", d < 0 ? `Late ${-d} day${d === -1 ? "" : "s"}` : d === 0 ? "Today" : d === 1 ? "Tomorrow" : d + " days"));
+      li.title = title; return li;
+    }));
+  }
+
+  // Activity: the newest 8 log entries (same rule as the Log card). New ones slide in, glow, and pulse Philadelphia.
+  const feedSeen = new Set(); let feedPrimed = false, feedSig = "";
+  const freshUntil = new Map();
+  function renderFeed() {
+    const ol = $("g3d-feed");
+    if (boardStatus === "signed-out") return ol.replaceChildren(el("li", "empty", "Sign in to claude.ai to see your board's activity."));
+    if (!loaded.has("log")) return ol.childElementCount || ol.replaceChildren(el("li", "empty", "Loading activity…"));
+    const all = state.log.slice().sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+    const key = (l) => l.id + "|" + l.ts, seenText = new Set(), items = [];
+    for (const l of all) { if (seenText.has(l.text)) continue; seenText.add(l.text); items.push(l); if (items.length === 8) break; }
+    let fresh = 0;
+    for (const l of all) { if (feedPrimed && !feedSeen.has(key(l))) { freshUntil.set(key(l), Date.now() + 4000); fresh++; } feedSeen.add(key(l)); }
+    feedPrimed = true;
+    const sig = items.map(key).join(",");
+    if (sig === feedSig && !fresh) return;
+    feedSig = sig;
+    if (!items.length) ol.replaceChildren(el("li", "empty", "Nothing yet. What you and your agents finish shows up here."));
+    else ol.replaceChildren(...items.map((l) => {
+      const li = el("li", (freshUntil.get(key(l)) || 0) > Date.now() ? "fresh" : "");
+      li.append(el("span", "tx", l.text || ""));
+      const meta = el("span", "meta", l.who ? l.who + " · " : ""); meta.append(agoEl("time", "", l.ts)); li.append(meta);
+      return li;
+    }));
+    if (fresh) {
+      pingHome();
+      setTimeout(() => ol.querySelectorAll("li.fresh").forEach((li) => li.classList.remove("fresh")), 4000);
+    }
+  }
+  let pingTimer = 0;
+  function pingHome() {
+    g3d.ping = true; clearTimeout(pingTimer);
+    g3d.globe ? applyGlobe() : drawFlat();
+    pingTimer = setTimeout(() => { g3d.ping = false; g3d.globe ? applyGlobe() : drawFlat(); }, 1800);
+  }
+
+  // Agents: chips under the globe, and a small satellite each, circling Philadelphia (still with reduced motion).
+  const FRESH_MS = 6 * 3600e3;
+  const agentFresh = (a) => { const t = new Date(a.lastRun); return !isNaN(t) && Date.now() - t < FRESH_MS; };
+  const agentList = () => state.agents.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const agentCap = (a) => [a.name || "Agent", a.lastRun ? "ran " + ago(a.lastRun) : (a.statusLabel || a.status || "ready"), a.lastResult].filter(Boolean).join(" · ");
+  function renderAgentChips() {
+    const ul = $("g3d-agents"), list = agentList();
+    if (!list.length) return ul.replaceChildren(el("li", "ag none", boardStatus === "signed-out" ? "Sign in to see your agents." : loaded.has("agents") ? "Your agents show up here after their first run." : "Loading…"));
+    ul.replaceChildren(...list.map((a) => {
+      const li = el("li", "ag " + (a.status === "working" ? "warn" : a.status === "ran" ? "good" : "") + (agentFresh(a) ? " fresh" : ""));
+      li.append(el("b", "", a.name || "Agent"), a.lastRun ? agoEl("span", "when", a.lastRun, "ran ") : el("span", "when", a.statusLabel || a.status || "ready"));
+      return li;
+    }));
+  }
+  const sats = { els: new Map(), pinned: null, t0: performance.now() };
+  function showCap(id, pin) {
+    const a = state.agents.find((x) => x.id === id), cap = $("g3d-cap");
+    if (pin) sats.pinned = sats.pinned === id ? null : id;
+    const shown = a && (pin ? sats.pinned === id : true);
+    cap.hidden = !shown; if (shown) cap.textContent = agentCap(a);
+  }
+  function hideCap() { if (sats.pinned && state.agents.some((x) => x.id === sats.pinned)) return showCap(sats.pinned); $("g3d-cap").hidden = true; }
+  function renderSats() {
+    const layer = $("g3d-sats"), list = agentList(), keep = new Set();
+    list.forEach((a, i) => {
+      keep.add(a.id);
+      let b = sats.els.get(a.id);
+      if (!b) {
+        b = el("button"); b.type = "button"; b.append(el("i"));
+        b.addEventListener("mouseenter", () => showCap(a.id)); b.addEventListener("focus", () => showCap(a.id));
+        b.addEventListener("mouseleave", hideCap); b.addEventListener("blur", hideCap);
+        b.addEventListener("click", () => showCap(a.id, true));
+        layer.append(b); sats.els.set(a.id, b);
+      }
+      b.dataset.i = i; b.dataset.n = list.length;
+      b.className = "sat" + (agentFresh(a) ? " fresh" : "") + (a.status === "working" ? " working" : "") + (b.classList.contains("off") ? " off" : "");
+      b.setAttribute("aria-label", agentCap(a));
+    });
+    for (const [id, b] of sats.els) if (!keep.has(id)) { b.remove(); sats.els.delete(id); }
+    if (sats.pinned && !keep.has(sats.pinned)) sats.pinned = null;
+    if (!$("g3d-cap").hidden) hideCap();
+    placeSats(performance.now());
+  }
+  // One slow orbit every 90 seconds, a little above the surface.
+  // The faint orbit rings the satellites travel on (one per distance used).
+  const orbits = () => [...new Set(agentList().map((a, i) => 8 + (i % 2) * 3))].map((dist) => Array.from({ length: 73 }, (_, k) => dest(PHL, k * 5, dist)));
+  const satGeo = (i, n, t) => ({ ...dest(PHL, 360 * i / n + 25 + (reduceMotion ? 0 : (t / 1000) * 4), 8 + (i % 2) * 3), alt: 0.16 });
+  const angDist = (a, b) => { const r = Math.PI / 180; return Math.acos(Math.min(1, Math.sin(a.lat * r) * Math.sin(b.lat * r) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.cos((a.lng - b.lng) * r))) / r; };
+  function placeSats(ts) {
+    const w = stage.clientWidth, h = stage.clientHeight, pov = g3d.globe && g3d.globe.pointOfView();
+    for (const b of sats.els.values()) {
+      const g = satGeo(+b.dataset.i, +b.dataset.n, ts - sats.t0);
+      let p = null;
+      if (g3d.globe) { if (angDist(pov, g) < 72) p = g3d.globe.getScreenCoords(g.lat, g.lng, g.alt); }
+      else if (g3d.flat) { const q = g3d.flat.proj(g.lng, g.lat), [cx, cy] = g3d.flat.c; if (q[2]) p = { x: cx + (q[0] - cx) * (1 + g.alt * 0.5), y: cy + (q[1] - cy) * (1 + g.alt * 0.5) }; }
+      const off = !p || !(p.x > 6 && p.x < w - 6 && p.y > 6 && p.y < h - 6);
+      b.classList.toggle("off", off);
+      if (!off) b.style.transform = `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px)`;
+    }
+  }
+  const liveLoop = (ts) => { if (g3d.onScreen && sats.els.size && (g3d.globe || !reduceMotion)) placeSats(ts); requestAnimationFrame(liveLoop); };
+  if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { g3d.onScreen = e.isIntersecting; }).observe(stage); else g3d.onScreen = true;
+
+  // Money pulse: one gauge per priced position, stop on the left, target on the right, what you paid as a line.
+  const gaugeRows = new Map();
+  const pl = { shown: null, anim: 0 };
+  function setPL(v) {
+    const out = $("g3d-pl");
+    const paint = (x) => { out.textContent = x == null ? "–" : money(x); out.className = x > 0 ? "pos" : x < 0 ? "neg" : ""; };
+    cancelAnimationFrame(pl.anim);
+    if (v == null || pl.shown == null || reduceMotion || Math.abs(v - pl.shown) < 0.005) { pl.shown = v; return paint(v); }
+    const from = pl.shown, t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / 900), e = 1 - (1 - k) ** 3; paint(from + (v - from) * e); if (k < 1) pl.anim = requestAnimationFrame(step); };
+    pl.shown = v; pl.anim = requestAnimationFrame(step);
+  }
+  function renderGauges() {
+    const ul = $("g3d-gauges");
+    const num = (v) => v != null && v !== "" && !isNaN(+v) ? +v : null;
+    const ps = state.positions.filter((p) => num(p.lastPrice) != null).sort((a, b) => String(a.ticker).localeCompare(String(b.ticker)));
+    if (!ps.length) {
+      gaugeRows.clear(); setPL(null);
+      return ul.replaceChildren(el("li", "empty", boardStatus === "signed-out" ? "Sign in to see your stocks." : loaded.has("positions") ? "No prices on the board yet. Market Watch adds them when it runs." : "Loading…"));
+    }
+    ul.querySelector(".empty")?.remove();
+    let cost = 0, value = 0, priced = 0; const keep = new Set();
+    for (const p of ps) {
+      keep.add(p.id);
+      const last = num(p.lastPrice), buy = num(p.buy), stop = num(p.stop), target = num(p.target), sh = +p.shares || 0;
+      if (buy != null) { cost += buy * sh; value += last * sh; priced++; }
+      let r = gaugeRows.get(p.id);
+      if (!r) {
+        r = { li: el("li", "gg"), tk: el("b", "tk"), px: el("span", "num px"), up: el("span", "up"), buy: el("span", "buy"), dot: el("span", "dot"), lo: el("span"), mid: el("span"), hi: el("span") };
+        const gh = el("div", "gh"), gauge = el("div", "gauge"), ends = el("div", "ends");
+        gh.append(r.tk, r.px, r.up); gauge.append(r.buy, r.dot); ends.append(r.lo, r.mid, r.hi); r.li.append(gh, gauge, ends);
+        gaugeRows.set(p.id, r);
+      }
+      const ref = buy ?? last, lo = stop ?? Math.min(ref, last) * 0.9, hi = target ?? Math.max(ref, last) * 1.1;
+      const at = (v) => hi > lo ? Math.max(0, Math.min(100, 100 * (v - lo) / (hi - lo))) : 50;
+      const gap = stop != null ? (last - stop) / last : null;
+      const tone = target != null && last >= target ? "good" : gap == null ? (buy == null || last >= buy ? "good" : "warn") : gap <= 0 ? "bad" : gap < 0.05 ? "warn" : "good";
+      r.li.className = "gg " + tone;
+      r.tk.textContent = p.ticker || "Stock"; r.px.textContent = money(last);
+      const up = agoEl("span", "up", p.lastUpdated, "updated "); r.up.replaceWith(up); r.up = up;
+      r.dot.style.left = at(last) + "%";
+      r.buy.hidden = buy == null; if (buy != null) r.buy.style.left = at(buy) + "%";
+      r.lo.textContent = stop != null ? "Stop " + money(stop) : "No stop"; r.mid.textContent = buy != null ? "Paid " + money(buy) : ""; r.hi.textContent = target != null ? "Target " + money(target) : "No target";
+      r.li.setAttribute("aria-label", [p.ticker, "last " + money(last), stop != null && "stop " + money(stop), target != null && "target " + money(target), buy != null && "paid " + money(buy), p.lastUpdated && "updated " + ago(p.lastUpdated)].filter(Boolean).join(", "));
+    }
+    for (const [id, r] of gaugeRows) if (!keep.has(id)) { r.li.remove(); gaugeRows.delete(id); }
+    const order = ps.map((p) => gaugeRows.get(p.id).li);
+    if (order.some((li, i) => ul.children[i] !== li)) ul.replaceChildren(...order);
+    setPL(priced ? value - cost : null);
+  }
+
+  function renderLive() { renderDue(); renderFeed(); renderAgentChips(); renderSats(); renderGauges(); }
+
+  // The clock ticks every second. At midnight the whole board redraws, so "Today", "Late" and the countdowns move on.
+  let clockDay = new Date().toDateString();
+  function tickClock() {
+    const now = new Date();
+    $("g3d-clock").textContent = now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+    if (now.toDateString() !== clockDay) {
+      clockDay = now.toDateString();
+      $("today").textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+      Object.values(renderers).forEach((f) => f()); renderMarket(); refreshExtras();
+    }
+    setTimeout(tickClock, 1000 - (Date.now() % 1000) + 5);
+  }
+  // Relative times ("2 min ago") and the 6-hour agent glow refresh every 30 seconds; the flat view's night shade moves too.
+  function tickAgo() {
+    document.querySelectorAll("[data-ago]").forEach((e) => { e.textContent = (e.dataset.pre || "") + ago(e.dataset.ago); });
+    renderAgentChips(); renderSats();
+    if (!g3d.globe && stage.dataset.state !== "globe") drawFlat();
+  }
+
+  // Night side for the flat view: where the sun is overhead right now (close enough for a picture).
+  function subsolar(now) {
+    const doy = (now - Date.UTC(now.getUTCFullYear(), 0, 0)) / 864e5, hrs = now.getUTCHours() + now.getUTCMinutes() / 60;
+    return { lat: -23.44 * Math.cos(2 * Math.PI / 365 * (doy + 10)), lng: ((12 - hrs) * 15 + 540) % 360 - 180 };
+  }
+
+  // Flat view: the same globe drawn as an SVG. It shows while the 3D library loads, and stays if 3D can't run.
+  function drawFlat() {
+    const svg = $("g3d-flat"), w = stage.clientWidth || 600, h = stage.clientHeight || 300;
+    const R = Math.min(w, h) * 0.4, cx = w / 2, cy = h / 2 + R * 0.12, r = Math.PI / 180;
+    const sp0 = Math.sin(VIEW.lat * r), cp0 = Math.cos(VIEW.lat * r);
+    // Unit vector in view space: x right, y up, z toward the viewer.
+    const vec = (lng, lat) => { const l = (lng - VIEW.lng) * r, p = lat * r; return [Math.cos(p) * Math.sin(l), cp0 * Math.sin(p) - sp0 * Math.cos(p) * Math.cos(l), sp0 * Math.sin(p) + cp0 * Math.cos(p) * Math.cos(l)]; };
+    const proj = (lng, lat) => {
+      let [x, y, z] = vec(lng, lat);
+      if (z < 0) { const k = Math.hypot(x, y) || 1; x /= k; y /= k; }   // behind the globe: pin to the edge
+      return [cx + R * x, cy - R * y, z >= 0];
+    };
+    g3d.flat = { proj, c: [cx, cy] };
+    const NS = "http://www.w3.org/2000/svg", mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+    const kids = [];
+    const defs = mk("defs", {}), glow = mk("radialGradient", { id: "g3d-glow" });
+    glow.append(mk("stop", { offset: "0.82", "stop-color": "#6cc6ff", "stop-opacity": "0.28" }), mk("stop", { offset: "1", "stop-color": "#6cc6ff", "stop-opacity": "0" }));
+    const clip = mk("clipPath", { id: "g3d-disc" }), soft = mk("filter", { id: "g3d-soft", x: "-20%", y: "-20%", width: "140%", height: "140%" });
+    clip.append(mk("circle", { cx, cy, r: R })); soft.append(mk("feGaussianBlur", { stdDeviation: Math.max(3, R / 22) }));
+    defs.append(glow, clip, soft); kids.push(defs, mk("circle", { cx, cy, r: R * 1.18, fill: "url(#g3d-glow)" }), mk("circle", { cx, cy, r: R, fill: "#04101f", stroke: "rgba(108,198,255,0.35)" }));
+    let d = "";
+    for (const f of landFeatures()) for (const ring of f.geometry.coordinates) {
+      const pts = ring.map(([x, y]) => proj(x, y));
+      if (!pts.some((p) => p[2])) continue;
+      d += "M" + pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L") + "Z";
+    }
+    kids.push(mk("path", { d, fill: "rgba(108,198,255,0.14)", stroke: "rgba(140,210,255,0.55)", "stroke-width": 0.7, "stroke-linejoin": "round" }));
+    // Night side: the visible half of the day/night line, closed along the dark edge of the disc, softly blurred.
+    const sun = subsolar(new Date()), S = vec(sun.lng, sun.lat), sxy = Math.hypot(S[0], S[1]);
+    let night = "";
+    if (sxy < 1e-3) night = S[2] < 0 ? `M${cx - R} ${cy}a${R} ${R} 0 1 0 ${2 * R} 0a${R} ${R} 0 1 0 ${-2 * R} 0Z` : "";
+    else {
+      const A = [-S[1] / sxy, S[0] / sxy, 0];
+      let B = [S[1] * A[2] - S[2] * A[1], S[2] * A[0] - S[0] * A[2], S[0] * A[1] - S[1] * A[0]]; if (B[2] < 0) B = B.map((v) => -v);
+      const pts = [];
+      for (let i = 0; i <= 32; i++) { const t = Math.PI * i / 32; pts.push([Math.cos(t) * A[0] + Math.sin(t) * B[0], Math.cos(t) * A[1] + Math.sin(t) * B[1]]); }
+      const a0 = Math.atan2(-A[1], -A[0]), dir = Math.sign(((Math.atan2(-S[1], -S[0]) - a0 + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) || 1;
+      for (let i = 1; i < 32; i++) { const t = a0 + dir * Math.PI * i / 32; pts.push([Math.cos(t), Math.sin(t)]); }
+      night = "M" + pts.map(([x, y]) => (cx + R * x).toFixed(1) + " " + (cy - R * y).toFixed(1)).join("L") + "Z";
+    }
+    if (night) { const g = mk("g", { "clip-path": "url(#g3d-disc)" }); g.append(mk("path", { d: night, fill: "rgba(1,4,12,0.55)", filter: "url(#g3d-soft)" })); kids.push(g); }
+    const { marks, c } = g3d.marks || layoutMarks(g3d.day);
+    const [hx, hy] = proj(PHL.lng, PHL.lat);
+    for (const m of [...marks, ...g3d.flash]) {
+      const [ex, ey] = proj(m.lng, m.lat), mx = (hx + ex) / 2, my = (hy + ey) / 2, len = Math.hypot(ex - hx, ey - hy);
+      kids.push(mk("path", { d: `M${hx.toFixed(1)} ${hy.toFixed(1)}Q${mx.toFixed(1)} ${(my - len * 0.45).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`, fill: "none", stroke: m.color, "stroke-width": 1.4, "stroke-opacity": 0.85, "stroke-linecap": "round" }),
+        mk("circle", { cx: ex.toFixed(1), cy: ey.toFixed(1), r: m.late ? 3.6 : 2.8, fill: m.color }));
+    }
+    if (g3d.flash.length) kids.push(mk("circle", { class: "g3d-pulse", cx: hx, cy: hy, r: 6, fill: "none", stroke: c.good, "stroke-width": 2 }));
+    for (const ring of orbits()) kids.push(mk("path", { d: "M" + ring.map((q) => { const [x, y] = proj(q.lng, q.lat), [ox, oy] = [cx + (x - cx) * 1.08, cy + (y - cy) * 1.08]; return ox.toFixed(1) + " " + oy.toFixed(1); }).join("L") + "Z", fill: "none", stroke: "rgba(247,131,172,0.28)", "stroke-width": 1, "stroke-dasharray": "2 4" }));
+    if (g3d.ping) kids.push(mk("circle", { class: "g3d-pulse", cx: hx, cy: hy, r: 6, fill: "none", stroke: "#bfe6ff", "stroke-width": 2 }));
+    kids.push(mk("circle", { cx: hx, cy: hy, r: 7, fill: "none", stroke: c.home, "stroke-opacity": 0.6 }), mk("circle", { cx: hx, cy: hy, r: 3.4, fill: "#ffffff" }));
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.replaceChildren(...kids);
+    placeSats(performance.now());
+  }
+
+  function applyGlobe() {
+    const gl = g3d.globe; if (!gl) return;
+    const { marks, c } = g3d.marks, flash = g3d.flash;
+    const home = { lat: PHL.lat, lng: PHL.lng, color: "#ffffff", r: 0.5, alt: 0.015, title: "Philadelphia" };
+    gl.arcsData([...marks, ...flash].map((m) => ({ startLat: PHL.lat, startLng: PHL.lng, endLat: m.lat, endLng: m.lng, color: [rgba(m.color, 0.15), m.color] })))
+      .pointsData([home, ...marks.map((m) => ({ ...m, r: m.late ? 0.75 : 0.55, alt: 0.015 })), ...flash.map((m) => ({ ...m, r: 0.55, alt: 0.015 }))])
+      .ringsData(reduceMotion ? [] : [{ lat: PHL.lat, lng: PHL.lng, color: c.home, max: 4 }, ...marks.filter((m) => m.late).map((m) => ({ lat: m.lat, lng: m.lng, color: c.bad, max: 2.4 })),
+        ...(flash.length ? [{ lat: PHL.lat, lng: PHL.lng, color: c.good, max: 6, speed: 8, period: 650 }] : []),
+        ...(g3d.ping ? [{ lat: PHL.lat, lng: PHL.lng, color: "#bfe6ff", max: 7, speed: 9, period: 600 }] : [])]);
+    gl.pathsData(orbits().map((pts) => ({ pts: pts.map((q) => [q.lat, q.lng, 0.16]) })));
+  }
+
+  function render3d() {
+    g3d.marks = layoutMarks(g3d.day);
+    renderLegend(g3d.marks.items);
+    renderTime();
+    if (g3d.globe) applyGlobe(); else drawFlat();
+  }
+
+  // Move the globe to day k. Stepping forward onto a day shows what got finished that day flying home (not with reduced motion).
+  let flashTimer = 0;
+  function setDay(k, step) {
+    k = Math.max(-RANGE, Math.min(0, Math.round(k)));
+    const forward = step && k > g3d.day;
+    g3d.day = k; g3d.marks = layoutMarks(k);
+    clearTimeout(flashTimer);
+    g3d.flash = forward && !reduceMotion ? g3d.marks.flash : [];
+    if (g3d.flash.length) flashTimer = setTimeout(() => { g3d.flash = []; g3d.globe ? applyGlobe() : drawFlat(); }, 1400);
+    render3d();
+  }
+  function stopPlay() {
+    if (!g3d.playing) return;
+    clearInterval(g3d.playing); g3d.playing = 0;
+    $("g3d-play").textContent = "Play"; $("g3d-legend").setAttribute("aria-live", "polite");
+  }
+  $("g3d-day").addEventListener("input", (e) => { stopPlay(); setDay(+e.target.value, true); });
+  $("g3d-play").addEventListener("click", () => {
+    if (g3d.playing) return stopPlay();
+    $("g3d-play").textContent = "Pause"; $("g3d-legend").setAttribute("aria-live", "off");
+    if (g3d.day >= 0) setDay(-RANGE, false);
+    g3d.playing = setInterval(() => { setDay(g3d.day + 1, true); if (g3d.day >= 0) stopPlay(); }, 400);
+  });
+
+  let extrasQueued = false;
+  function refreshExtras() {
+    if (extrasQueued) return; extrasQueued = true;
+    setTimeout(() => { extrasQueued = false; renderPercy(); render3d(); renderLive(); }, 0);
+  }
+
+  // Starfield painted once with a fixed seed, so it looks the same on every visit.
+  (() => {
+    try {
+      const cv = document.createElement("canvas"); cv.width = 900; cv.height = 420; const g = cv.getContext("2d");
+      let s = 7; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+      for (let i = 0; i < 260; i++) { const a = rnd() ** 3; g.fillStyle = `rgba(220,235,255,${0.2 + a * 0.7})`; const z = a > 0.85 ? 1.6 : 1; g.fillRect(rnd() * cv.width, rnd() * cv.height, z, z); }
+      stage.style.backgroundImage = `url(${cv.toDataURL("image/png")}), radial-gradient(90% 80% at 50% 45%, #0b1a30 0%, #050c18 60%, #030812 100%)`;
+    } catch (e) { /* plain night background is fine */ }
+  })();
+
+  function flatOnly(why) {
+    if (g3d.globe) return;
+    stage.dataset.state = "flat"; $("g3d-note").textContent = why; drawFlat();
+  }
+  const hasWebGL = () => {
+    try { const cv = document.createElement("canvas"), ctx = cv.getContext("webgl2") || cv.getContext("webgl"); ctx?.getExtension("WEBGL_lose_context")?.loseContext(); return !!ctx; }
+    catch (e) { return false; }
+  };
+  function startGlobe() {
+    if (typeof window.Globe !== "function") return flatOnly("The 3D globe didn't load, so this is the flat view.");
+    const host = $("g3d-gl");
+    const gl = window.Globe({ rendererConfig: { antialias: true, alpha: true, powerPreference: "low-power" }, animateIn: !reduceMotion })(host)
+      .backgroundColor("rgba(0,0,0,0)").width(stage.clientWidth).height(stage.clientHeight)
+      .showAtmosphere(true).atmosphereColor("#6cc6ff").atmosphereAltitude(0.22)
+      .polygonsData(landFeatures()).polygonAltitude(0.006)
+      .polygonCapColor(() => "rgba(108,198,255,0.16)").polygonSideColor(() => "rgba(108,198,255,0.05)").polygonStrokeColor(() => "rgba(140,210,255,0.6)").polygonLabel(() => "")
+      .arcColor("color").arcStroke(0.7).arcAltitudeAutoScale(0.4).arcCurveResolution(48)
+      .arcDashLength(reduceMotion ? 1 : 0.6).arcDashGap(reduceMotion ? 0 : 0.3).arcDashAnimateTime(reduceMotion ? 0 : 6000)
+      .pointColor("color").pointRadius("r").pointAltitude("alt")
+      .pointLabel((d) => { const t = el("div"); t.textContent = d.kind ? plain(d.title) + (d.late ? " (late)" : "") : d.title; t.style.cssText = "font:12px system-ui,sans-serif;background:#071220ee;color:#dbeaf7;padding:5px 8px;border:1px solid #6cc6ff44;border-radius:7px"; return t.outerHTML; })
+      .ringColor((d) => (t) => rgba(d.color, 0.8 * (1 - t))).ringMaxRadius("max").ringPropagationSpeed((d) => d.speed || 1).ringRepeatPeriod((d) => d.period || 2400)
+      .pathPoints("pts").pathPointAlt((p) => p[2]).pathColor(() => "rgba(247,131,172,0.3)").pathStroke(0.4).pathDashLength(0.02).pathDashGap(0.02).pathTransitionDuration(0)
+      .arcsTransitionDuration(reduceMotion ? 0 : 800).pointsTransitionDuration(reduceMotion ? 0 : 800);
+    gl.globeMaterial().color.set("#04101f");
+    gl.globeMaterial().emissive.set("#020a16");
+    gl.globeMaterial().shininess = 4;
+    const ctl = gl.controls();
+    ctl.enableZoom = false; ctl.enablePan = false; ctl.autoRotate = false; ctl.rotateSpeed = 0.6;
+    fitView(); gl.pointOfView(VIEW);
+    g3d.globe = gl; stage.dataset.state = "globe"; $("g3d-note").textContent = "";
+    applyGlobe();
+    // A slow sway either side of Philadelphia; it stops once you turn the globe yourself.
+    ctl.addEventListener("start", () => { g3d.sway = false; $("g3d-home").hidden = false; });
+    $("g3d-home").onclick = () => {
+      gl.pointOfView(VIEW, 900); $("g3d-home").hidden = true;
+      if (!reduceMotion) setTimeout(() => { g3d.t0 = performance.now(); g3d.sway = true; }, 950);
+    };
+    g3d.t0 = performance.now();
+    const sway = (ts) => {
+      if (g3d.globe !== gl) return;   // the globe was dropped (fell back to the flat view): stop the loop
+      if (g3d.sway && g3d.visible) gl.pointOfView({ ...VIEW, lng: VIEW.lng + 14 * Math.sin((ts - g3d.t0) / 9000) });
+      requestAnimationFrame(sway);
+    };
+    if (!reduceMotion) requestAnimationFrame(sway);
+    if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { g3d.visible = e.isIntersecting; e.isIntersecting ? gl.resumeAnimation() : gl.pauseAnimation(); }).observe(stage);
+  }
+  function load3d() {
+    if (!hasWebGL()) return flatOnly("3D is turned off in this browser, so this is the flat view.");
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/globe.gl@2.27.2/dist/globe.gl.min.js"; s.async = true;
+    const fail = () => flatOnly("The 3D globe didn't load, so this is the flat view.");
+    const timer = setTimeout(fail, 20000);
+    s.onload = () => { clearTimeout(timer); try { startGlobe(); } catch (e) { g3d.globe = null; $("g3d-gl").replaceChildren(); fail(); } };
+    s.onerror = () => { clearTimeout(timer); fail(); };
+    document.head.append(s);
+  }
+  if ("ResizeObserver" in window) {
+    let lastW = 0;
+    new ResizeObserver(() => {
+      if (stage.clientWidth === lastW) return; lastW = stage.clientWidth;
+      if (g3d.globe) { g3d.globe.width(stage.clientWidth).height(stage.clientHeight); fitView(); if (!g3d.sway) g3d.globe.pointOfView(VIEW); } else drawFlat();
+    }).observe(stage);
+  }
+
   const renderers = { tasks: renderTasks, money: renderMoney, positions: renderStocks, agents: renderAgents, log: renderLog };
   Object.values(renderers).forEach((f) => f()); renderMarket();
+  refreshExtras();
+  tickClock(); setInterval(tickAgo, 30000); requestAnimationFrame(liveLoop);
+  // The 3D library loads only after the board has drawn once.
+  setTimeout(load3d, 300);
 
   // One log doc per item, keyed by the item's id: ticking writes it, unticking deletes it,
   // so ticking on, off and on again leaves a single entry. A failed log write never blocks the tick.
@@ -393,12 +1207,12 @@ form.add input[type=text] { flex: 1 1 200px; }
 
   (async () => {
     db = await window.claude?.use?.("db");
-    if (!db) { $("conn").textContent = "Sign in to claude.ai to load your board."; $("now-lead").textContent = "Your board loads when you're signed in."; return; }
-    $("conn").textContent = "Live";
+    if (!db) { $("conn").textContent = "Sign in to claude.ai to load your board."; $("now-lead").textContent = "Your board loads when you're signed in."; boardStatus = "signed-out"; refreshExtras(); return; }
+    $("conn").textContent = "Live"; boardStatus = "live";
     for (const name of Object.keys(renderers)) {
       db.collection(name).onSnapshot((snap) => {
-        state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        renderers[name]();
+        state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() })); loaded.add(name);
+        renderers[name](); refreshExtras();
       }, () => { $("conn").textContent = "Lost connection to the board. Reload to reconnect."; });
     }
     db.doc("market/today").onSnapshot((s) => { state.market = s.exists ? s.data() : null; renderMarket(); }, () => {});

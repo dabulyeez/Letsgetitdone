@@ -3,6 +3,8 @@ name: today
 description: Gives Donya his exact commands for today - who to call, what to mail, what to say, what to attach - by running Mission Control over the board, the case files and new email. Use when he types /today or says "what do I do", "give me my commands", "get everything done", or "send everything off".
 ---
 
+Every agent this launches follows `.claude/AGENT_RULES.md`; never send, submit, pay, trade or sign for Donya.
+
 # /today
 
 1. Launch the `mission-control-agent` subagent (Agent tool, `subagent_type: "mission-control-agent"`). Tell it today's date and time and anything Donya just said (what he finished, what he answered), so it starts from the latest state.

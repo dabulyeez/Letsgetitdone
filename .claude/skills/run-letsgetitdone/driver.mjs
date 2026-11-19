@@ -12,7 +12,8 @@
 //   quit
 //   EOF
 //
-// Options: --out <dir> (default /tmp/letsgetitdone-shots), --page <path> (default monitor/daily-monitor.html)
+// Options: --out <dir> (default /tmp/letsgetitdone-shots), --page <path> (default monitor/daily-monitor.html),
+//          --cdn <dir> (serve cdn.jsdelivr.net/npm/<pkg>@<ver>/<file> from <dir>/node_modules/<pkg>/<file>, see SKILL.md)
 import { createRequire } from 'node:module'
 import { execSync } from 'node:child_process'
 import { readFileSync, mkdirSync, existsSync } from 'node:fs'
@@ -26,6 +27,7 @@ const opt = (name, dflt) => { const i = argv.indexOf(name); return i >= 0 ? argv
 const OUT = resolve(opt('--out', '/tmp/letsgetitdone-shots'))
 const PAGE = resolve(opt('--page', 'monitor/daily-monitor.html'))
 const SEED = resolve(here, 'sample-seed.json')
+const CDN = opt('--cdn', null) && resolve(opt('--cdn'))
 mkdirSync(OUT, { recursive: true })
 
 // playwright is installed globally in this container; ESM ignores NODE_PATH, so resolve it by hand.
@@ -83,6 +85,20 @@ page.on('pageerror', (e) => errors.push('pageerror: ' + e.message))
 // Google Fonts are not reachable from the container. Answer with an empty 200 so the fallback stack
 // renders and no console error is produced (an aborted request would log net::ERR_FAILED).
 await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: r.request().url().includes('googleapis') ? 'text/css' : 'font/woff2', body: '' }))
+// cdn.jsdelivr.net (the 3D view's globe library) is not reachable either. By default answer with an empty
+// script: it "loads", defines nothing, and the page shows its flat fallback with no console error.
+// With --cdn <dir>, files from an `npm install` in <dir> are served instead, if the version matches.
+await page.route(/^https:\/\/cdn\.jsdelivr\.net\//, (r) => {
+  const m = /^\/npm\/((?:@[^/]+\/)?[^@/]+)@([^/]+)\/(.+)$/.exec(new URL(r.request().url()).pathname)
+  if (CDN && m) {
+    const dir = `${CDN}/node_modules/${m[1]}`
+    try {
+      if (JSON.parse(readFileSync(`${dir}/package.json`, 'utf8')).version === m[2] && existsSync(`${dir}/${m[3]}`))
+        return r.fulfill({ status: 200, contentType: 'application/javascript', body: readFileSync(`${dir}/${m[3]}`) })
+    } catch {}
+  }
+  r.fulfill({ status: 200, contentType: 'application/javascript', body: '' })
+})
 page.setDefaultTimeout(5000)  // a mistyped selector should fail in 5s, not Playwright's default 30s
 await page.addInitScript(DB_STUB)
 // goto (not setContent) so the init script above runs before the page script.
@@ -119,10 +135,22 @@ async function smoke() {
   check('unset stop order is flagged', /not set in app/i.test(stocks), stocks)
   check('total gain/loss tile is a dollar amount', /^-?\$[\d,]+\.\d\d$/.test(await txt('#stock-tiles .tile:first-child .v')), await txt('#stock-tiles .tile:first-child .v'))
   check('open risky money item is listed first', (await txt('#money li')).includes('DEMOA near stop'), await txt('#money li'))
+  // sample-seed.json's phone bill is due 2026-10-20 and still open, so it is overdue from then on.
+  const phoneChip = await page.locator('#money li', { hasText: 'Phone bill' }).locator('.chip').allInnerTexts()
+  check('overdue open bill gets a "Late" chip', phoneChip.length === 1 && /^late$/i.test(phoneChip[0]), JSON.stringify(phoneChip))
+  const paidChips = await page.locator('#money li', { hasText: 'Internet' }).locator('.chip').count()
+  check('paid bill gets no due chip', paidChips === 0, `${paidChips} chips`)
   check('market summary renders', (await txt('#market-line')).length > 0)
   check('all agents listed', (await page.locator('#agents li').count()) === Object.keys(seeded.agents).length)
   const doneFold = await page.evaluate(() => { const li = [...document.querySelectorAll('#tasks li.done')]; return { n: li.length, folded: li.filter((x) => x.closest('details') && !x.closest('details').open).length } })
   check('done tasks sit inside a closed <details>', doneFold.n > 0 && doneFold.folded === doneFold.n, JSON.stringify(doneFold))
+  // 3D card, live parts: countdown chips to due dates, a ticking h:mm:ss clock, and a money gauge per priced position.
+  const live = await page.evaluate(() => ({ due: [...document.querySelectorAll('#g3d-due .cd:not(.none)')].map((e) => e.innerText), clock: document.getElementById('g3d-clock').innerText }))
+  check('3D card shows 1-4 countdown chips and a live h:mm:ss clock', live.due.length >= 1 && live.due.length <= 4 && /^\d{1,2}:\d{2}:\d{2}/.test(live.clock), JSON.stringify(live))
+  const priced = Object.values(seeded.positions).filter((p) => p.lastPrice != null).length
+  await page.waitForFunction(() => document.getElementById('g3d-pl').innerText === document.querySelector('#stock-tiles .tile .v').innerText, null, { timeout: 3000 }).catch(() => {})
+  const gauges = await page.evaluate(() => ({ n: document.querySelectorAll('#g3d-gauges .gg .gauge .dot').length, pl: document.getElementById('g3d-pl').innerText, tile: document.querySelector('#stock-tiles .tile .v').innerText }))
+  check('money pulse has a gauge per priced position and the same total as the Stocks card', gauges.n === priced && gauges.pl === gauges.tile, JSON.stringify({ priced, ...gauges }))
   await shot('smoke-2-seeded-desktop')
 
   // Tick, untick, tick again: the page keeps one log doc per task, so there must never be two "Done:" entries.
@@ -134,6 +162,9 @@ async function smoke() {
   check('ticking a task writes status "done"', Object.values(after.tasks).some((t) => t.title === firstNow.title && t.status === 'done'))
   let n = await doneLogs()
   check('ticking a task creates exactly one log entry for it', n === 1, `${n} entries`)
+  // The new log doc arrives through the live snapshot: it tops the activity feed, glowing, with a relative time.
+  const feed = await page.evaluate(() => [...document.querySelectorAll('#g3d-feed li')].map((li) => ({ text: li.querySelector('.tx')?.innerText, when: li.querySelector('time')?.innerText, fresh: li.classList.contains('fresh') })))
+  check('activity feed shows the new log entry first, glowing, with relative times', feed.length >= 2 && feed[0].text === 'Done: ' + firstNow.title && feed[0].fresh && feed[0].when === 'just now' && feed.every((f) => /just now|min ago|h ago|yesterday|days ago|^on /.test(f.when || '')), JSON.stringify(feed))
   await page.click('#tasks details.done-list summary')
   await tickFor('Reopen ' + firstNow.title).click()
   await page.waitForTimeout(100)
@@ -151,6 +182,17 @@ async function smoke() {
   check('add-task form creates a "week" task', Object.values((await dump()).tasks).some((t) => t.title === 'Smoke test task' && t.group === 'week'))
   check('input clears after adding', (await page.inputValue('#new-task')) === '')
 
+  // Time slider on the 3D card. The task ticked above has a log entry dated today, so today counts it as
+  // finished that day and yesterday shows it still open. Sliding must not change the cards above.
+  const timeState = () => page.evaluate(() => { const t = (id) => document.getElementById(id).innerText; return { date: t('g3d-date'), sum: t('g3d-sum'), legend: t('g3d-legend'), cards: [t('now-lead'), t('g-tasks'), t('g-money'), t('task-progress'), t('money-sum')].join(' | ') } })
+  const today = await timeState()
+  await page.locator('#g3d-day').fill('-1')
+  await page.waitForTimeout(100)
+  const yesterday = await timeState()
+  check('time slider: moving back a day changes the 3D summary (task ticked today is open yesterday)', today.date === 'Today' && /1 finished that day/.test(today.sum) && yesterday.date !== 'Today' && !/finished/.test(yesterday.sum) && today.sum !== yesterday.sum, JSON.stringify({ today, yesterday }))
+  check('time slider leaves the cards above unchanged', today.cards === yesterday.cards, JSON.stringify({ before: today.cards, after: yesterday.cards }))
+  await page.locator('#g3d-day').fill('0')
+
   await page.setViewportSize(VIEWPORTS.phone)
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.waitForTimeout(100)
@@ -160,6 +202,15 @@ async function smoke() {
   check('stock Gain, Stop and Target cells are fully visible at 400px', clipped === 0, `${clipped} cells cut off`)
   await shot('smoke-3-seeded-phone-dark')
 
+  // 3D view: the globe, or its flat fallback (the default, since the CDN is stubbed out), must be drawn.
+  await page.waitForFunction(() => ['globe', 'flat'].includes(document.getElementById('g3d')?.dataset.state), null, { timeout: 25000 }).catch(() => {})
+  const g3d = await page.evaluate(() => { const s = document.getElementById('g3d'); return { state: s.dataset.state, canvas: !!s.querySelector('#g3d-gl canvas'), flat: s.querySelectorAll('#g3d-flat path').length, legend: document.getElementById('g3d-legend').innerText } })
+  check('3D view draws the globe or its flat fallback, with a legend', (g3d.state === 'globe' ? g3d.canvas : g3d.state === 'flat' && g3d.flat > 1) && /tasks open/.test(g3d.legend), JSON.stringify(g3d))
+  const percy = (await txt('#percy-say')).trim()
+  check("Percy's bubble has a line about the board", percy.length > 10 && !/Getting your board/.test(percy), percy)
+  const boards = await page.locator('section[data-hue="globe"] nav.boards a').evaluateAll((as) => as.map((a) => a.href))
+  const wanted = ['https://claude.ai/artifact/1CdhDJmmhiPRjpTmuzWWm6', 'https://claude.ai/artifact/SmU1NdZJoJapivRpNkmVNM', 'https://claude.ai/artifact/VESv9SuV4r6WuLStib56WB', 'https://dabulyeez.github.io/Letsgetitdone/monitor/street-map.html']
+  check('links to the 4 other 3D boards', wanted.every((u) => boards.includes(u)), JSON.stringify(boards))
   check('no console errors', errors.length === 0, errors.join(' | '))
   const failed = results.filter((r) => !r).length
   console.log(`\n${results.length - failed}/${results.length} passed. Screenshots in ${OUT}`)
