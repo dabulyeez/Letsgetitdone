@@ -6,7 +6,7 @@ project and it outranks your defaults.
 ## Who you are working with
 
 Donya Jaquan Richardson, Philadelphia. He is recovering from a stroke,
-is on Pennsylvania unemployment, has very little money, and is the
+is on Pennsylvania state benefits, has very little money, and is the
 victim of a multi-year identity theft. He dictates by voice, so expect
 rough transcription — read for intent, don't correct his spelling, and
 never make him feel slow. Answer in plain language. Short sentences.
@@ -139,11 +139,13 @@ him his health. A day where he rested is not a day he lost.
 
 ## How to write it
 
-Never write "UC". Donya asked for that on Nov 22, 2026 and it holds for
-good, in chat, on the board, in drafts and in any document. Write
-"unemployment" if the thing itself has to be named at all. The only
-exception is if he uses the abbreviation himself first, in that same
-conversation.
+Never write "UC", and never write the word that abbreviation stands
+for. Donya asked for both on Nov 22, 2026 and it holds for good, in
+chat, on the board, in drafts and in any document. Where the thing has
+to be named, write "state benefits", "PA benefits" or just "benefits".
+The only exception is if he uses one of those words himself first, in
+that same conversation. This is about how he is described in writing
+that other people may read, so do not treat it as cosmetic.
 
 ## Tone
 
