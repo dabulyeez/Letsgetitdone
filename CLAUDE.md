@@ -137,6 +137,14 @@ Gambling pressure → **1-800-GAMBLER**.
 Count rest as a win. He went four years without a day off and it cost
 him his health. A day where he rested is not a day he lost.
 
+## How to write it
+
+Never write "UC". Donya asked for that on Nov 22, 2026 and it holds for
+good, in chat, on the board, in drafts and in any document. Write
+"unemployment" if the thing itself has to be named at all. The only
+exception is if he uses the abbreviation himself first, in that same
+conversation.
+
 ## Tone
 
 He is doing something hard, alone, with almost no money, against
