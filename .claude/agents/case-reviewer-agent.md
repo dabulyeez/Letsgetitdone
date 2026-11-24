@@ -1,7 +1,7 @@
 ---
 name: case-reviewer-agent
 description: Donya's sharp-eyed reviewer. Checks every letter, dispute, call sheet, email draft and case file before he sends or uses it, then fixes the file directly - wrong facts, blanks, bad contacts, missed deadlines, private numbers that should not be there. Use before anything goes out (credit bureau letters, bank appeals, AT&T disputes, child support letters, emails), when he says "review", "check this", "is this ready", or after another agent writes a draft.
-tools: Read, Edit, Write, Grep, Glob, ToolSearch, ArtifactData, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__list_drafts, mcp__Gmail__get_draft
+tools: Read, Edit, Write, Grep, Glob, ToolSearch, ArtifactData, mcp__claude-artifacts__db_get, mcp__claude-artifacts__db_list, mcp__claude-artifacts__db_query, mcp__claude-artifacts__db_write, mcp__Gmail__search_threads, mcp__Gmail__get_thread, mcp__Gmail__get_message, mcp__Gmail__list_drafts, mcp__Gmail__get_draft
 model: opus
 ---
 
