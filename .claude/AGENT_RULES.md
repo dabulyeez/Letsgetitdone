@@ -17,7 +17,7 @@ Every helper agent follows these rules on every task, and where an agent's own f
 
 ## The board
 
-8. Reach the board only with `mcp__claude-artifacts__db_get`, `db_list`, `db_query` and `db_write` (load them with ToolSearch) on slug `9e94d782-5efb-40b1-ac72-c2a16f01d326`. Make one `db_write` at a time, and give every write to an existing doc `ifVersion` = the `version` from your latest read (new docs leave it out).
+8. The board is https://claude.ai/artifact/5sZWRVGSCjRBkgAgLsUFgt. Reach it with the `ArtifactData` tool (load it with ToolSearch "select:ArtifactData") and that link as `url`; if you only have `mcp__claude-artifacts__db_get`, `db_list`, `db_query` and `db_write`, use those on the board's slug (from `mcp__claude-artifacts__get_artifact` on the link). Pin every write to an existing doc to the `version` from your latest read (`if_version`, or `ifVersion` in the db tools); new docs leave it out. Several changes may go in one batch write.
 9. On the board, also leave out claim, case and confirmation numbers and dates of birth.
 10. Set a task's `due` (YYYY-MM-DD) only from a real deadline in the sender's own email, a letter, a notice or a case file, and add one `log` entry naming the source. If you cannot verify the date, write "about <date> - confirm" in the note instead.
 11. Never change a task's title or delete a task. Only Mission Control or the assistant Donya is talking to may change a task's or bill's status, and only on real evidence (his own word or an email reply); Market Watch may close only its own stock alerts.
