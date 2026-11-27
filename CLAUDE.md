@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Working on this project
 
 Read this before answering anything. It is the standing brief for this
@@ -85,3 +89,49 @@ Be straight with him, give him the real answer including when it is bad
 news, and never promise an outcome you cannot deliver. "They have to
 give it back" is not something you can say. What you can say is what to
 do next, and what happens if it doesn't work.
+
+## The code
+
+There is no build step, no package manager and no test framework. Every
+page is one self-contained HTML file.
+
+**Two kinds of pages, and they run differently:**
+
+- **claude.ai Artifacts** (`monitor/daily-monitor.html`,
+  `monitor/login-globe.html`). They read and write a shared database
+  through `window.claude.use("db")`, which exists only inside claude.ai,
+  so they do not work as plain files. Production is the published
+  artifact: republish the file to its existing URL (see
+  `.claude/skills/deploy/SKILL.md`), never as a new artifact. The Daily
+  Monitor's database is **the board**.
+- **Plain browser pages** (`index.html`, `monitor/live-watch.html`,
+  `ip-watch.html`, `ip-globe.html`, `street-map.html`). They are served by
+  GitHub Pages from the root of `main`
+  (`.github/workflows/jekyll-gh-pages.yml` deploys on every push to
+  `main`), use only public CORS APIs, and keep the owner's data in
+  `localStorage`, never in the repo. Libraries load from CDNs with pinned
+  versions.
+
+**Agents and skills** (`.claude/`) are most of the "app". The six agents in
+`.claude/agents/` each read and write the board and must obey
+`.claude/AGENT_RULES.md`. Skills: `show-monitor` (read the board out
+loud), `today` (the day's commands), `review` (check a draft before it
+goes out), `deploy` (republish pages), `run-letsgetitdone` (drive the
+Daily Monitor locally). When a board or page URL changes, update it
+everywhere it appears: `bin/monitor`, `bin/start`, `index.html`, the
+skills and every agent file (`grep -rn "artifact/" .`).
+
+`bin/` holds small POSIX `sh` scripts (`monitor`, `start`, `ipcheck`).
+`ios/DailyMonitor/` is a separate SwiftUI app with its own README.
+
+## Checking a change
+
+- Daily Monitor: `node .claude/skills/run-letsgetitdone/driver.mjs --smoke`
+  from the repo root. It loads the page in headless Chromium with a stub
+  database, runs its checks against `sample-seed.json`, writes screenshots
+  to `/tmp/letsgetitdone-shots/`, and exits non-zero on failure. The skill
+  file documents the interactive REPL.
+- Any other page: open it in headless Playwright Chromium at 1280px and
+  400px wide, light and dark, and check for console errors and sideways
+  scrolling.
+- Shell scripts: `sh -n bin/<script>`.
