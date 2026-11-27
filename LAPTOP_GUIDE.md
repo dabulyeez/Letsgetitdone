@@ -77,7 +77,7 @@ Six helpers. You don't launch them by hand — Claude calls the right one. This 
 |---|---|
 | **mission-control-agent** | Runs everything. Turns the board, case files and email into one ordered list of commands for today. |
 | **case-reviewer-agent** | Checks every letter, dispute, call sheet and email draft before it goes out. Catches wrong facts, blanks, bad contacts, missed deadlines, private numbers that shouldn't be there. |
-| **benefits-case-agent** | PA unemployment, RESEA, ID.me, IRS notices, benefits deadlines. |
+| **benefits-case-agent** | PA state benefits, RESEA, ID.me, IRS notices, benefits deadlines. |
 | **daily-ops-agent** | Your 24-hour day plan and your Shopify store. |
 | **market-watch-agent** | Your stocks and watchlist, in plain language. |
 | **wins-and-ideas-agent** | Daily wins, energy and mood, and new ideas for income. |

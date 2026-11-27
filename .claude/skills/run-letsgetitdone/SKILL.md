@@ -33,7 +33,7 @@ viewport phone
 theme dark
 ss phone-dark
 click "#money .tick"
-fill #new-task "Call PA UC about RESEA"
+fill #new-task "Call PA benefits about RESEA"
 select #new-group week
 click "#add-task button[type=submit]"
 dump
