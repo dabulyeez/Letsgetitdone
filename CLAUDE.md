@@ -112,7 +112,7 @@ page is one self-contained HTML file.
   `localStorage`, never in the repo. Libraries load from CDNs with pinned
   versions.
 
-**Agents and skills** (`.claude/`) are most of the "app". The six agents in
+**Agents and skills** (`.claude/`) are most of the "app". The seven agents in
 `.claude/agents/` each read and write the board and must obey
 `.claude/AGENT_RULES.md`. Skills: `show-monitor` (read the board out
 loud), `today` (the day's commands), `review` (check a draft before it

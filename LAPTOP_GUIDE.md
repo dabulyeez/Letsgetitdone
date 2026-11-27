@@ -81,6 +81,7 @@ Six helpers. You don't launch them by hand — Claude calls the right one. This 
 | **daily-ops-agent** | Your 24-hour day plan and your Shopify store. |
 | **market-watch-agent** | Your stocks and watchlist, in plain language. |
 | **wins-and-ideas-agent** | Daily wins, energy and mood, and new ideas for income. |
+| **login-watch-agent** | Who is signing in to your accounts: maps each sign-in on the Login Globe and asks "was this you?" |
 
 ---
 
@@ -117,7 +118,7 @@ These are written into `.claude/AGENT_RULES.md` and every agent follows them. Yo
 │   └── daily-monitor.html   ← your board
 └── .claude/
     ├── AGENT_RULES.md       ← the house rules
-    ├── agents/              ← your six helpers
+    ├── agents/              ← your seven helpers
     └── skills/              ← your slash commands
 ```
 
