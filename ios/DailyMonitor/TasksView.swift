@@ -140,7 +140,7 @@ struct AddTaskView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Task, like: Call PA UC about RESEA", text: $title)
+                TextField("Task, like: Call PA benefits about RESEA", text: $title)
                 TextField("Note (optional)", text: $note, axis: .vertical)
                 Picker("When", selection: $group) {
                     ForEach(TaskGroup.allCases) { Text($0.label).tag($0) }
