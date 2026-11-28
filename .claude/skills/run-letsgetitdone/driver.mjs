@@ -209,7 +209,7 @@ async function smoke() {
   const percy = (await txt('#percy-say')).trim()
   check("Percy's bubble has a line about the board", percy.length > 10 && !/Getting your board/.test(percy), percy)
   const boards = await page.locator('section[data-hue="globe"] nav.boards a').evaluateAll((as) => as.map((a) => a.href))
-  const wanted = ['https://claude.ai/artifact/1CdhDJmmhiPRjpTmuzWWm6', 'https://claude.ai/artifact/SmU1NdZJoJapivRpNkmVNM', 'https://claude.ai/artifact/VESv9SuV4r6WuLStib56WB', 'https://dabulyeez.github.io/Letsgetitdone/monitor/street-map.html']
+  const wanted = ['https://claude.ai/artifact/1CdhDJmmhiPRjpTmuzWWm6', 'https://dabulyeez.github.io/letsgetitdone-pages/monitor/ip-globe.html', 'https://claude.ai/artifact/3Ubq4zrzdRsoYNKMsrmjpA', 'https://dabulyeez.github.io/letsgetitdone-pages/monitor/street-map.html']
   check('links to the 4 other 3D boards', wanted.every((u) => boards.includes(u)), JSON.stringify(boards))
   check('no console errors', errors.length === 0, errors.join(' | '))
   const failed = results.filter((r) => !r).length
