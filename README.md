@@ -12,7 +12,7 @@
 
 ## Live Watch (your own price watcher)
 
-`monitor/live-watch.html`, also at https://dabulyeez.github.io/Letsgetitdone/monitor/live-watch.html once merged.
+`monitor/live-watch.html`, also at https://dabulyeez.github.io/letsgetitdone-pages/monitor/live-watch.html.
 
 - Crypto prices are live, tick by tick, from Coinbase. No key needed.
 - Stock prices are live from Finnhub after you paste a free key from finnhub.io in the settings panel.
